@@ -14,7 +14,7 @@ export const projects = [
     format: "16:9",
     media: {
       kind: "single",
-      src: "./media/clips/portal.mp4",
+      src: "./media/clips/portal.mp4?v=balanced-1",
       poster: "./media/posters/portal.jpg",
       label: "Портал, созданный Евгением в DaVinci Resolve Fusion",
       hasAudio: false,
@@ -35,7 +35,7 @@ export const projects = [
     format: "9:16",
     media: {
       kind: "single",
-      src: "./media/clips/buzz.mp4",
+      src: "./media/clips/buzz.mp4?v=balanced-1",
       poster: "./media/posters/buzz.jpg",
       label: "Фрагмент рекламного Reels для Buzz Powerbanks",
       layout: "portrait",
@@ -56,7 +56,7 @@ export const projects = [
     format: "16:9",
     media: {
       kind: "single",
-      src: "./media/clips/football.mp4",
+      src: "./media/clips/football.mp4?v=balanced-1",
       poster: "./media/posters/football.jpg",
       label: "Фрагмент итогового ролика футбольного турнира",
     },
@@ -76,7 +76,7 @@ export const projects = [
     format: "16:9",
     media: {
       kind: "single",
-      src: "./media/clips/story.mp4",
+      src: "./media/clips/story.mp4?v=balanced-1",
       poster: "./media/posters/story.jpg",
       label: "Фрагмент трейлера Disturbing Internet Legends",
     },
@@ -97,9 +97,9 @@ export const projects = [
     media: {
       kind: "mosaic",
       items: [
-        { src: "./media/clips/vfx-auto.mp4", poster: "./media/posters/vfx-auto.jpg", label: "Световые эффекты для автомобиля" },
-        { src: "./media/clips/vfx-building.mp4", poster: "./media/posters/vfx-building.jpg", label: "VFX-разрушение здания" },
-        { src: "./media/clips/vfx-bear.mp4", poster: "./media/posters/vfx-bear.jpg", label: "Surface Tracking на движущемся объекте" },
+        { src: "./media/clips/vfx-auto.mp4?v=balanced-1", poster: "./media/posters/vfx-auto.jpg", label: "Световые эффекты для автомобиля" },
+        { src: "./media/clips/vfx-building.mp4?v=balanced-1", poster: "./media/posters/vfx-building.jpg", label: "VFX-разрушение здания" },
+        { src: "./media/clips/vfx-bear.mp4?v=balanced-1", poster: "./media/posters/vfx-bear.jpg", label: "Surface Tracking на движущемся объекте" },
       ],
     },
   },
