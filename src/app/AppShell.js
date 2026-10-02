@@ -92,7 +92,7 @@ function createAuthor() {
   section.innerHTML = `
     <div class="author__signature">
       <video muted loop playsinline preload="none" poster="./media/posters/tim-cut-logo.jpg" aria-label="Анимация логотипа Tim Cut" data-project-video>
-        <source data-src="./media/clips/tim-cut-logo.m4v" type="video/mp4">
+        <source data-src="./media/clips/tim-cut-logo.mp4" type="video/mp4">
       </video>
       <span class="author__signature-label">Logo animation · Tim Cut</span>
     </div>
