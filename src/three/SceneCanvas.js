@@ -295,6 +295,7 @@ export class SceneCanvas {
     this.timer.connect(document);
     this.frameId = null;
     this.isVisible = !document.hidden;
+    this.mediaSuspended = document.documentElement.dataset.mediaActive === "true";
 
     try {
       this.init();
@@ -365,19 +366,21 @@ export class SceneCanvas {
     this.onResize = () => this.resize();
     this.onVisibility = () => {
       this.isVisible = !document.hidden;
-      if (this.isVisible && !this.motionQuery.matches && !this.frameId) {
-        this.timer.reset();
-        this.animate();
-      }
+      if (this.isVisible) this.startAnimation();
+      else this.stopAnimation();
     };
     this.onMotionChange = () => {
       if (this.motionQuery.matches) {
-        if (this.frameId) cancelAnimationFrame(this.frameId);
-        this.frameId = null;
+        this.stopAnimation();
         this.renderStill();
-      } else if (!this.frameId) {
-        this.animate();
+      } else {
+        this.startAnimation();
       }
+    };
+    this.onMediaActivity = (event) => {
+      this.mediaSuspended = event.detail?.active === true;
+      if (this.mediaSuspended) this.stopAnimation();
+      else this.startAnimation();
     };
     this.onBurst = (event) => {
       this.burst = Math.max(this.burst, event.detail?.strength || 0.5);
@@ -402,7 +405,19 @@ export class SceneCanvas {
     document.addEventListener("visibilitychange", this.onVisibility);
     window.addEventListener("framezero:scenechange", this.onSceneChange);
     window.addEventListener("framezero:burst", this.onBurst);
+    window.addEventListener("framezero:mediaactivity", this.onMediaActivity);
     this.motionQuery.addEventListener?.("change", this.onMotionChange);
+  }
+
+  startAnimation() {
+    if (!this.isVisible || this.motionQuery.matches || this.mediaSuspended || this.frameId) return;
+    this.timer.reset();
+    this.animate();
+  }
+
+  stopAnimation() {
+    if (this.frameId) cancelAnimationFrame(this.frameId);
+    this.frameId = null;
   }
 
   setResponsivePosition() {
@@ -443,7 +458,7 @@ export class SceneCanvas {
   }
 
   animate = () => {
-    if (!this.isVisible || this.motionQuery.matches) {
+    if (!this.isVisible || this.motionQuery.matches || this.mediaSuspended) {
       this.frameId = null;
       return;
     }
@@ -481,6 +496,7 @@ export class SceneCanvas {
     document.removeEventListener("visibilitychange", this.onVisibility);
     window.removeEventListener("framezero:scenechange", this.onSceneChange);
     window.removeEventListener("framezero:burst", this.onBurst);
+    window.removeEventListener("framezero:mediaactivity", this.onMediaActivity);
     this.motionQuery.removeEventListener?.("change", this.onMotionChange);
     this.scene?.traverse((object) => {
       object.geometry?.dispose?.();
