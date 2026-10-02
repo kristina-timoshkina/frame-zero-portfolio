@@ -98,6 +98,7 @@ export class InteractionDirector {
     this.media?.classList.toggle("is-silent", data.hasAudio === false);
     if (this.audioHint) this.audioHint.hidden = data.hasAudio === false;
     this.video.load();
+    document.dispatchEvent(new CustomEvent("framezero:formatopen"));
 
     this.portal.hidden = false;
     this.portal.setAttribute("aria-hidden", "false");
@@ -127,6 +128,7 @@ export class InteractionDirector {
       this.video?.load();
       this.backgroundElements.forEach((element) => { element.inert = false; });
       this.lastTrigger?.focus();
+      document.dispatchEvent(new CustomEvent("framezero:formatclose"));
     }, this.motionQuery.matches ? 0 : 620);
   }
 
