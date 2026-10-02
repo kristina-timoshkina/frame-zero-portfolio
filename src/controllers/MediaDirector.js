@@ -5,6 +5,7 @@ export class MediaDirector {
     this.soundButtons = [...document.querySelectorAll("[data-sound-toggle]")];
     this.visibleFrames = new Map();
     this.activeFrame = null;
+    this.mediaActivity = false;
     this.suspended = false;
     this.saveData = navigator.connection?.saveData === true;
     this.bindEvents();
@@ -24,6 +25,7 @@ export class MediaDirector {
     this.onFormatOpen = () => {
       this.suspended = true;
       this.pauseAll();
+      this.setMediaActivity(true);
     };
 
     this.onFormatClose = () => {
@@ -140,6 +142,7 @@ export class MediaDirector {
 
   setActiveFrame(frame, { autoplay = true } = {}) {
     if (frame === this.activeFrame) {
+      this.setMediaActivity(Boolean(frame?.classList.contains("media-frame")));
       if (frame && autoplay && frame.dataset.userPaused !== "true") this.playFrame(frame);
       return;
     }
@@ -151,6 +154,7 @@ export class MediaDirector {
     });
 
     this.activeFrame = frame;
+    this.setMediaActivity(Boolean(frame?.classList.contains("media-frame")));
     if (!frame) return;
 
     frame.dataset.mediaActive = "true";
@@ -174,6 +178,13 @@ export class MediaDirector {
 
   pauseAll() {
     this.frames.forEach((frame) => this.pauseFrame(frame));
+  }
+
+  setMediaActivity(active) {
+    if (active === this.mediaActivity) return;
+    this.mediaActivity = active;
+    document.documentElement.dataset.mediaActive = String(active);
+    window.dispatchEvent(new CustomEvent("framezero:mediaactivity", { detail: { active } }));
   }
 
   play(video) {
@@ -220,6 +231,7 @@ export class MediaDirector {
     document.removeEventListener("visibilitychange", this.onVisibility);
     document.removeEventListener("framezero:formatopen", this.onFormatOpen);
     document.removeEventListener("framezero:formatclose", this.onFormatClose);
+    this.setMediaActivity(false);
     this.videos.forEach((video) => video.pause());
   }
 }
