@@ -44,16 +44,27 @@ export class MediaDirector {
         event.stopPropagation();
         const primary = videos[0];
         if (!primary) return;
+        this.hydrate(primary);
         const shouldEnable = primary.muted;
 
-        this.videos.forEach((video) => {
-          video.muted = true;
-        });
+        this.videos.forEach((video) => this.mute(video));
         this.soundButtons.forEach((otherButton) => this.setSoundButton(otherButton, false));
 
-        primary.muted = !shouldEnable;
-        this.setSoundButton(button, shouldEnable);
-        if (shouldEnable) this.play(primary);
+        if (!shouldEnable) return;
+
+        primary.volume = 1;
+        primary.defaultMuted = false;
+        primary.muted = false;
+        primary.removeAttribute("muted");
+        this.setSoundButton(button, true);
+        frame.classList.remove("is-paused");
+
+        const promise = primary.play();
+        promise?.catch(() => {
+          this.mute(primary);
+          this.setSoundButton(button, false);
+          frame.classList.add("is-paused");
+        });
       });
     });
   }
@@ -71,9 +82,7 @@ export class MediaDirector {
           } else {
             frame.dataset.mediaVisible = "false";
             videos.forEach((video) => video.pause());
-            videos.forEach((video) => {
-              video.muted = true;
-            });
+            videos.forEach((video) => this.mute(video));
             const soundButton = frame.querySelector("[data-sound-toggle]");
             if (soundButton) this.setSoundButton(soundButton, false);
             frame.classList.add("is-paused");
@@ -87,15 +96,40 @@ export class MediaDirector {
   }
 
   play(video) {
+    this.hydrate(video);
     const promise = video.play();
     promise?.catch(() => {
       video.closest(".media-frame")?.classList.add("is-paused");
     });
   }
 
+  hydrate(video) {
+    if (video.dataset.hydrated === "true") return;
+    video.dataset.hydrated = "true";
+
+    const directSource = video.dataset.src;
+    if (directSource) video.src = directSource;
+    video.querySelectorAll("source[data-src]").forEach((source) => {
+      source.src = source.dataset.src;
+    });
+
+    const frame = video.closest(".media-frame, .author__signature");
+    video.addEventListener("loadeddata", () => frame?.classList.add("is-media-ready"), { once: true });
+    video.addEventListener("error", () => frame?.classList.add("has-media-error"), { once: true });
+    video.load();
+  }
+
+  mute(video) {
+    video.muted = true;
+    video.defaultMuted = true;
+    video.setAttribute("muted", "");
+  }
+
   setSoundButton(button, enabled) {
     button.setAttribute("aria-pressed", String(enabled));
     button.querySelector("[data-sound-label]").textContent = enabled ? "Звук включён" : "Звук";
+    const title = button.dataset.soundTitle || "ролике";
+    button.setAttribute("aria-label", `${enabled ? "Выключить" : "Включить"} звук в работе «${title}»`);
   }
 
   dispose() {

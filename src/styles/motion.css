@@ -1,37 +1,124 @@
-@keyframes drift-one {
-  0%, 100% { transform: translate3d(-5%, -3%, 0) rotate(0deg) scale(1); }
-  50% { transform: translate3d(7%, 4%, 0) rotate(17deg) scale(1.08); }
+.depth-rig {
+  position: fixed;
+  inset: 0 var(--filmstrip-width) 0 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+  perspective: 1000px;
+  transform-style: preserve-3d;
 }
 
-@keyframes drift-two {
-  0%, 100% { transform: translate3d(5%, 6%, 0) rotate(0deg); }
-  50% { transform: translate3d(-8%, -4%, 0) rotate(-20deg); }
-}
-
-.hero__orbit {
+.depth-panel {
   position: absolute;
-  z-index: -1;
-  border: 1px solid rgba(121, 105, 255, 0.16);
-  border-radius: 46% 54% 62% 38% / 55% 42% 58% 45%;
-  filter: blur(0.2px);
+  top: 50%;
+  left: 50%;
+  width: clamp(22rem, 50vw, 48rem);
+  aspect-ratio: 16 / 9;
+  opacity: 0;
+  border: 1px solid rgba(151, 236, 255, 0.72);
+  border-radius: 1.6rem;
+  background:
+    linear-gradient(135deg, rgba(113, 230, 255, 0.16), rgba(120, 104, 255, 0.06) 45%, rgba(255, 121, 110, 0.12));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    inset 0 0 5rem rgba(111, 228, 255, 0.08),
+    0 0 1.2rem rgba(111, 228, 255, 0.2),
+    0 0 7rem rgba(75, 61, 177, 0.24);
+  backdrop-filter: blur(3px) saturate(150%);
+  filter: drop-shadow(0 0 1.4rem rgba(120, 217, 255, 0.2));
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
 }
 
-.hero__orbit--one {
-  top: 5%;
-  right: 4%;
-  width: min(58vw, 52rem);
-  aspect-ratio: 1;
-  animation: drift-one 18s ease-in-out infinite;
-  box-shadow: inset 0 0 8rem rgba(111, 228, 255, 0.04), 0 0 8rem rgba(120, 104, 255, 0.05);
+.depth-panel::before {
+  position: absolute;
+  inset: 0.75rem;
+  border: 1px solid rgba(228, 244, 255, 0.18);
+  border-radius: 1rem;
+  background:
+    linear-gradient(90deg, transparent 49.8%, rgba(228, 244, 255, 0.08) 50%, transparent 50.2%),
+    linear-gradient(transparent 49.8%, rgba(228, 244, 255, 0.08) 50%, transparent 50.2%);
+  content: "";
 }
 
-.hero__orbit--two {
-  right: 14%;
-  bottom: 7%;
-  width: min(36vw, 32rem);
-  aspect-ratio: 1;
-  animation: drift-two 15s ease-in-out infinite;
-  border-color: rgba(255, 121, 110, 0.13);
+.depth-panel::after {
+  position: absolute;
+  top: -0.22rem;
+  left: 12%;
+  width: 24%;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(229, 250, 255, 0.9), transparent);
+  box-shadow: 0 0 1.1rem rgba(111, 228, 255, 0.8);
+  content: "";
+}
+
+.depth-panel span {
+  position: absolute;
+  top: 0.7rem;
+  right: 1rem;
+  color: rgba(226, 238, 255, 0.45);
+  font: 0.55rem/1 monospace;
+  letter-spacing: 0.16em;
+}
+
+.depth-panel--two { border-color: rgba(151, 116, 255, 0.4); }
+.depth-panel--three { border-color: rgba(255, 121, 110, 0.36); }
+.depth-panel--four { border-color: rgba(200, 245, 255, 0.3); }
+
+.cut-sweep {
+  position: fixed;
+  top: -18vh;
+  bottom: -18vh;
+  left: 50%;
+  z-index: 24;
+  width: 24vw;
+  min-width: 10rem;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(119, 230, 255, 0.66), rgba(255, 255, 255, 0.98), rgba(148, 106, 255, 0.58), transparent);
+  filter: blur(14px);
+  mix-blend-mode: screen;
+  transform: rotate(10deg);
+  will-change: transform, opacity;
+}
+
+.scene-pulse {
+  position: fixed;
+  top: 50%;
+  left: calc((100% - var(--filmstrip-width)) / 2);
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  mix-blend-mode: normal;
+}
+
+.scene-pulse span {
+  color: var(--cyan);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.36em;
+}
+
+.scene-pulse strong {
+  color: rgba(111, 228, 255, 0.04);
+  font-family: var(--display);
+  font-size: clamp(11rem, 30vw, 32rem);
+  font-weight: 700;
+  line-height: 0.72;
+  -webkit-text-stroke: 2px rgba(220, 239, 255, 0.66);
+  filter: drop-shadow(0 0 2.4rem rgba(111, 228, 255, 0.5));
+}
+
+.manifesto > *,
+.case-section__content,
+.case-section > .media-frame {
+  position: relative;
+  z-index: 2;
 }
 
 .media-frame__aperture {
@@ -44,9 +131,24 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .hero__orbit,
+  .depth-rig,
+  .cut-sweep,
+  .scene-pulse {
+    display: none;
+  }
+
   .media-frame__aperture {
     animation: none;
   }
 }
 
+@media (max-width: 700px) {
+  .depth-panel {
+    width: 74vw;
+  }
+
+  .cut-sweep,
+  .scene-pulse {
+    display: none;
+  }
+}

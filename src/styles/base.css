@@ -15,8 +15,9 @@ body {
   min-width: 320px;
   overflow-x: hidden;
   background:
-    radial-gradient(circle at 20% 4%, rgba(92, 62, 190, 0.14), transparent 28rem),
-    radial-gradient(circle at 80% 33%, rgba(38, 177, 221, 0.06), transparent 32rem),
+    radial-gradient(circle at 18% 5%, rgba(92, 62, 190, 0.24), transparent 30rem),
+    radial-gradient(circle at 82% 30%, rgba(38, 177, 221, 0.14), transparent 34rem),
+    radial-gradient(circle at 46% 68%, rgba(166, 93, 243, 0.08), transparent 38rem),
     var(--ink);
   color: var(--paper);
   font-family: var(--body);
@@ -93,9 +94,9 @@ button {
 }
 
 .eyebrow {
-  margin: 0 0 1.4rem;
+  margin: 0 0 0.9rem;
   color: var(--cyan);
-  font-size: 0.67rem;
+  font-size: clamp(0.8rem, 0.88vw, 0.86rem);
   font-weight: 700;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -108,7 +109,7 @@ p {
 }
 
 h2 {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.1rem;
   font-family: var(--display);
   font-size: clamp(3.4rem, 7vw, 7.8rem);
   font-weight: 600;
@@ -131,4 +132,3 @@ h2 {
     transition-duration: 0.01ms !important;
   }
 }
-

@@ -15,6 +15,7 @@ export function createFilmstripNav(items) {
     link.innerHTML = `
       <span class="filmstrip__perforation" aria-hidden="true"></span>
       <span class="filmstrip__frame">
+        ${item.thumbnail ? `<img class="filmstrip__thumb" src="${item.thumbnail}" alt="" loading="lazy" decoding="async">` : ""}
         <span class="filmstrip__number">${item.number}</span>
         <span class="filmstrip__title">${item.title}</span>
       </span>
@@ -27,4 +28,3 @@ export function createFilmstripNav(items) {
   nav.append(list);
   return nav;
 }
-

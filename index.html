@@ -17,9 +17,46 @@
     <meta property="og:image" content="./og-frame-zero.png" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
     <title>FRAME ZERO — интерактивное портфолио Евгения Тимошкина</title>
+    <style>
+      html, body { min-height: 100%; background: #050711; }
+      body { margin: 0; }
+      #boot-poster {
+        position: fixed;
+        inset: 0;
+        z-index: 200;
+        display: grid;
+        align-content: center;
+        padding: 8vw;
+        overflow: hidden;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 76% 36%, rgba(111, 228, 255, 0.16), transparent 26rem),
+          radial-gradient(circle at 30% 26%, rgba(120, 104, 255, 0.16), transparent 30rem),
+          #050711;
+        color: #f3f5fb;
+        font-family: "Arial Narrow", sans-serif;
+        transition: opacity 120ms ease, visibility 120ms ease;
+      }
+      #boot-poster::after {
+        position: absolute;
+        inset: 0;
+        background-image: radial-gradient(circle, rgba(111, 228, 255, 0.55) 0 1px, transparent 1.5px);
+        background-size: 7rem 6rem;
+        content: "";
+        opacity: 0.12;
+      }
+      .boot-poster__label { color: #6fe4ff; font: 700 0.75rem/1 sans-serif; letter-spacing: 0.24em; text-transform: uppercase; }
+      .boot-poster__title { position: relative; z-index: 1; margin: 1.2rem 0 0; font-size: clamp(5rem, 18vw, 15rem); font-weight: 700; letter-spacing: -0.07em; line-height: 0.72; }
+      .boot-poster__title span { display: block; color: transparent; -webkit-text-stroke: 1px rgba(220, 239, 255, 0.58); }
+      .app-ready #boot-poster { visibility: hidden; opacity: 0; }
+    </style>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Перейти к проектам</a>
+    <div id="boot-poster" aria-hidden="true">
+      <span class="boot-poster__label">Интерактивное портфолио · 2026</span>
+      <strong class="boot-poster__title">FRAME<span>ZERO</span></strong>
+    </div>
     <canvas id="scene-canvas" aria-hidden="true"></canvas>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>

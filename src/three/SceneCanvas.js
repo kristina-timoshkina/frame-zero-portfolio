@@ -3,53 +3,245 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 
-const vertexShader = `
-  uniform float uTime;
-  uniform vec2 uPointer;
-  varying vec3 vNormal;
-  varying vec3 vWorldPosition;
-  varying float vWave;
+function rememberOpacity(material, opacity = 1) {
+  material.transparent = true;
+  material.opacity = opacity;
+  material.userData.baseOpacity = opacity;
+  return material;
+}
 
-  void main() {
-    float waveA = sin(position.y * 3.1 + uTime * 0.72);
-    float waveB = sin(position.x * 4.4 - uTime * 0.51);
-    float waveC = cos(position.z * 3.7 + uTime * 0.38);
-    float pointerWave = sin((position.x + uPointer.x) * 2.6 + (position.y - uPointer.y) * 2.0);
-    float displacement = (waveA + waveB + waveC) * 0.055 + pointerWave * 0.025;
-    vec3 displaced = position + normal * displacement;
+function createReelPlateGeometry() {
+  const shape = new THREE.Shape();
+  shape.absarc(0, 0, 1.42, 0, Math.PI * 2, false);
 
-    vNormal = normalize(normalMatrix * normal);
-    vWorldPosition = (modelMatrix * vec4(displaced, 1.0)).xyz;
-    vWave = displacement;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
+  for (let index = 0; index < 5; index += 1) {
+    const angle = index * (Math.PI * 2 / 5) - Math.PI / 2;
+    const hole = new THREE.Path();
+    hole.absarc(Math.cos(angle) * 0.78, Math.sin(angle) * 0.78, 0.34, 0, Math.PI * 2, true);
+    shape.holes.push(hole);
   }
-`;
 
-const fragmentShader = `
-  uniform float uTime;
-  uniform float uOpacity;
-  varying vec3 vNormal;
-  varying vec3 vWorldPosition;
-  varying float vWave;
+  const centerHole = new THREE.Path();
+  centerHole.absarc(0, 0, 0.2, 0, Math.PI * 2, true);
+  shape.holes.push(centerHole);
 
-  void main() {
-    vec3 viewDirection = normalize(cameraPosition - vWorldPosition);
-    float fresnel = pow(1.0 - max(0.0, dot(viewDirection, normalize(vNormal))), 2.5);
-    float shimmer = sin(vWorldPosition.y * 4.0 + uTime * 0.55) * 0.5 + 0.5;
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: 0.12,
+    steps: 1,
+    bevelEnabled: true,
+    bevelThickness: 0.035,
+    bevelSize: 0.025,
+    bevelSegments: 3,
+    curveSegments: 56,
+  });
+  geometry.translate(0, 0, -0.06);
+  geometry.computeVertexNormals();
+  return geometry;
+}
 
-    vec3 midnight = vec3(0.055, 0.035, 0.16);
-    vec3 violet = vec3(0.39, 0.25, 1.0);
-    vec3 cyan = vec3(0.36, 0.89, 1.0);
-    vec3 coral = vec3(1.0, 0.34, 0.42);
+function createFilmStrip() {
+  const group = new THREE.Group();
+  const curve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(1.12, -0.72, -0.02),
+    new THREE.Vector3(1.42, -0.92, 0.08),
+    new THREE.Vector3(1.38, -1.34, 0.26),
+    new THREE.Vector3(1.16, -1.68, 0.48),
+    new THREE.Vector3(0.74, -2.02, 0.78),
+    new THREE.Vector3(0.15, -2.28, 0.92),
+    new THREE.Vector3(-0.34, -2.52, 0.54),
+  ], false, "centripetal");
+  const frenet = curve.computeFrenetFrames(96, false);
 
-    vec3 color = mix(midnight, violet, smoothstep(-0.16, 0.16, vWave));
-    color = mix(color, cyan, fresnel * 0.92);
-    color += coral * pow(shimmer, 7.0) * 0.12;
+  const crossSection = new THREE.Shape();
+  crossSection.moveTo(-0.41, -0.025);
+  crossSection.lineTo(0.41, -0.025);
+  crossSection.lineTo(0.41, 0.025);
+  crossSection.lineTo(-0.41, 0.025);
+  crossSection.closePath();
 
-    float alpha = 0.72 + fresnel * 0.26;
-    gl_FragColor = vec4(color, alpha * uOpacity);
+  const stripMaterial = rememberOpacity(new THREE.MeshPhysicalMaterial({
+    color: 0x3a5e75,
+    emissive: 0x0b536d,
+    emissiveIntensity: 1.08,
+    metalness: 0.18,
+    roughness: 0.38,
+    clearcoat: 0.5,
+    clearcoatRoughness: 0.22,
+    side: THREE.DoubleSide,
+  }), 0.96);
+  const strip = new THREE.Mesh(new THREE.ExtrudeGeometry(crossSection, {
+    steps: 96,
+    bevelEnabled: false,
+    extrudePath: curve,
+  }), stripMaterial);
+  group.add(strip);
+
+  const railMaterial = rememberOpacity(new THREE.MeshBasicMaterial({
+    color: new THREE.Color(0x8eeaff).multiplyScalar(1.65),
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  }), 0.78);
+  for (const edge of [-1, 1]) {
+    const railPoints = [];
+    for (let index = 0; index <= 96; index += 1) {
+      const t = index / 96;
+      railPoints.push(curve.getPointAt(t).addScaledVector(frenet.normals[index], edge * 0.405));
+    }
+    const railCurve = new THREE.CatmullRomCurve3(railPoints, false, "centripetal");
+    group.add(new THREE.Mesh(new THREE.TubeGeometry(railCurve, 96, 0.012, 6, false), railMaterial));
   }
-`;
+
+  const frameMaterial = rememberOpacity(new THREE.MeshBasicMaterial({
+    color: new THREE.Color(0x9e8cff).multiplyScalar(1.18),
+    transparent: true,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+  }), 0.42);
+  const perforationMaterial = rememberOpacity(new THREE.MeshBasicMaterial({
+    color: new THREE.Color(0xc8f7ff).multiplyScalar(1.32),
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+  }), 0.86);
+
+  const frameCount = 13;
+  const perforationCount = frameCount * 4;
+  const frames = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.5, 0.17), frameMaterial, frameCount);
+  const perforations = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.055, 0.035), perforationMaterial, perforationCount);
+  frames.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  perforations.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  const dummy = new THREE.Object3D();
+  const basis = new THREE.Matrix4();
+  const updateDetails = (time = 0) => {
+    let perforationIndex = 0;
+    for (let index = 0; index < frameCount; index += 1) {
+      const t = 0.025 + ((index / frameCount + time * 0.055) % 1) * 0.94;
+      const point = curve.getPointAt(t);
+      const frameIndex = Math.min(96, Math.round(t * 96));
+      const tangent = frenet.tangents[frameIndex];
+      const normal = frenet.normals[frameIndex];
+      const binormal = frenet.binormals[frameIndex];
+      basis.makeBasis(normal, tangent, binormal);
+      dummy.position.copy(point).addScaledVector(binormal, 0.032);
+      dummy.quaternion.setFromRotationMatrix(basis);
+      dummy.scale.set(index % 3 === 0 ? 1.04 : 0.92, 1, 1);
+      dummy.updateMatrix();
+      frames.setMatrixAt(index, dummy.matrix);
+
+      for (const edge of [-1, 1]) {
+        for (const step of [-0.055, 0.055]) {
+          dummy.position.copy(point)
+            .addScaledVector(normal, edge * 0.365)
+            .addScaledVector(tangent, step)
+            .addScaledVector(binormal, 0.035);
+          dummy.scale.set(1, 1, 1);
+          dummy.updateMatrix();
+          perforations.setMatrixAt(perforationIndex, dummy.matrix);
+          perforationIndex += 1;
+        }
+      }
+    }
+    frames.instanceMatrix.needsUpdate = true;
+    perforations.instanceMatrix.needsUpdate = true;
+  };
+
+  updateDetails();
+  frames.frustumCulled = false;
+  perforations.frustumCulled = false;
+  group.add(frames, perforations);
+  group.userData.update = updateDetails;
+  return group;
+}
+
+function createFilmReel() {
+  const artifact = new THREE.Group();
+  const spool = new THREE.Group();
+  const plateGeometry = createReelPlateGeometry();
+  const metal = rememberOpacity(new THREE.MeshPhysicalMaterial({
+    color: 0x71849c,
+    metalness: 0.88,
+    roughness: 0.24,
+    clearcoat: 0.9,
+    clearcoatRoughness: 0.13,
+    emissive: 0x071520,
+    emissiveIntensity: 0.45,
+    side: THREE.DoubleSide,
+  }), 0.95);
+  const darkMetal = rememberOpacity(new THREE.MeshPhysicalMaterial({
+    color: 0x172435,
+    metalness: 0.82,
+    roughness: 0.3,
+    clearcoat: 0.72,
+    clearcoatRoughness: 0.2,
+    emissive: 0x06111c,
+    emissiveIntensity: 0.55,
+  }), 0.98);
+  const edgeLight = rememberOpacity(new THREE.MeshBasicMaterial({
+    color: new THREE.Color(0x8eeaff).multiplyScalar(1.85),
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  }), 0.94);
+  const auraLight = rememberOpacity(new THREE.MeshBasicMaterial({
+    color: new THREE.Color(0x6bdcff).multiplyScalar(1.55),
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  }), 0.32);
+  const coralLight = rememberOpacity(new THREE.MeshBasicMaterial({
+    color: new THREE.Color(0xff796e).multiplyScalar(1.35),
+    transparent: true,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  }), 0.34);
+  const filmRollMaterial = rememberOpacity(new THREE.MeshPhysicalMaterial({
+    color: 0x18394b,
+    emissive: 0x0a4056,
+    emissiveIntensity: 0.78,
+    metalness: 0.28,
+    roughness: 0.42,
+    clearcoat: 0.42,
+    clearcoatRoughness: 0.28,
+  }), 0.98);
+
+  const front = new THREE.Mesh(plateGeometry, metal);
+  const rear = new THREE.Mesh(plateGeometry, darkMetal);
+  front.position.z = 0.3;
+  rear.position.z = -0.3;
+
+  const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.36, 0.72, 64, 1, false), darkMetal);
+  hub.rotation.x = Math.PI / 2;
+  const filmRoll = new THREE.Mesh(new THREE.CylinderGeometry(1.16, 1.16, 0.5, 96, 1, false), filmRollMaterial);
+  filmRoll.rotation.x = Math.PI / 2;
+  const axle = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.84, 48, 1, false), metal);
+  axle.rotation.x = Math.PI / 2;
+
+  const outerFront = new THREE.Mesh(new THREE.TorusGeometry(1.39, 0.035, 10, 96), edgeLight);
+  const outerRear = new THREE.Mesh(new THREE.TorusGeometry(1.39, 0.028, 10, 96), edgeLight);
+  const hubRing = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.025, 10, 64), edgeLight);
+  const cyanAura = new THREE.Mesh(new THREE.TorusGeometry(1.48, 0.055, 10, 96), auraLight);
+  const cyanAuraOuter = new THREE.Mesh(new THREE.TorusGeometry(1.57, 0.022, 8, 96), auraLight);
+  const coralRim = new THREE.Mesh(new THREE.TorusGeometry(1.43, 0.032, 10, 96), coralLight);
+  outerFront.position.z = 0.38;
+  outerRear.position.z = -0.38;
+  hubRing.position.z = 0.39;
+  cyanAura.position.z = 0.36;
+  cyanAuraOuter.position.z = 0.34;
+  coralRim.position.z = -0.4;
+  cyanAuraOuter.material = auraLight.clone();
+  cyanAuraOuter.material.userData.baseOpacity = 0.16;
+  cyanAuraOuter.material.opacity = 0.16;
+
+  spool.add(rear, filmRoll, hub, axle, front, coralRim, outerRear, outerFront, cyanAura, cyanAuraOuter, hubRing);
+  const strip = createFilmStrip();
+  artifact.add(spool, strip);
+  artifact.userData.spool = spool;
+  artifact.userData.strip = strip;
+  artifact.userData.fadeMaterials = [metal, darkMetal, filmRoll.material, edgeLight, auraLight, cyanAuraOuter.material, coralLight, ...new Set(strip.children.map((child) => child.material))];
+  return artifact;
+}
 
 function createParticleField(count, radius) {
   const geometry = new THREE.BufferGeometry();
@@ -78,10 +270,10 @@ function createParticleField(count, radius) {
   geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
 
   const material = new THREE.PointsMaterial({
-    size: 0.025,
+    size: 0.032,
     sizeAttenuation: true,
     transparent: true,
-    opacity: 0.72,
+    opacity: 0.9,
     vertexColors: true,
     blending: THREE.AdditiveBlending,
     depthWrite: false,
@@ -98,6 +290,7 @@ export class SceneCanvas {
     this.pointerTarget = new THREE.Vector2();
     this.sceneFade = 1;
     this.sceneFadeTarget = 1;
+    this.burst = 0;
     this.timer = new THREE.Timer();
     this.timer.connect(document);
     this.frameId = null;
@@ -118,7 +311,7 @@ export class SceneCanvas {
 
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
-      antialias: false,
+      antialias: true,
       alpha: true,
       powerPreference: "high-performance",
     });
@@ -128,62 +321,33 @@ export class SceneCanvas {
     this.renderer.toneMappingExposure = 1.12;
 
     this.composer = new EffectComposer(this.renderer);
+    this.composer.renderTarget1.samples = 4;
+    this.composer.renderTarget2.samples = 4;
     this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.46, 0.52, 0.58);
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.58, 0.46, 0.58);
     this.composer.addPass(this.bloom);
 
     this.group = new THREE.Group();
     this.scene.add(this.group);
 
-    const segments = window.innerWidth < 900 ? 38 : 64;
-    this.coreGeometry = new THREE.IcosahedronGeometry(1.48, segments > 40 ? 5 : 4);
-    this.coreMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        uTime: { value: 0 },
-        uOpacity: { value: 1 },
-        uPointer: { value: this.pointer },
-      },
-      vertexShader,
-      fragmentShader,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending,
-    });
+    this.ambientLight = new THREE.HemisphereLight(0x9deeff, 0x130a25, 1.35);
+    this.keyLight = new THREE.PointLight(0x87eaff, 34, 10, 2);
+    this.rimLight = new THREE.PointLight(0xff796e, 23, 9, 2);
+    this.keyLight.position.set(3.8, 2.5, 4.5);
+    this.rimLight.position.set(-2.4, -2.8, 3.2);
+    this.scene.add(this.ambientLight, this.keyLight, this.rimLight);
 
-    this.core = new THREE.Mesh(this.coreGeometry, this.coreMaterial);
-    this.group.add(this.core);
+    this.reel = createFilmReel();
+    this.reel.rotation.set(-0.2, -0.5, 0.08);
+    this.group.add(this.reel);
 
-    this.inner = new THREE.Mesh(
-      new THREE.IcosahedronGeometry(1.12, 3),
-      new THREE.MeshBasicMaterial({
-        color: 0x21104f,
-        transparent: true,
-        opacity: 0.72,
-        blending: THREE.AdditiveBlending,
-      }),
-    );
-    this.group.add(this.inner);
-
-    this.particles = createParticleField(window.innerWidth < 900 ? 430 : 920, 2.4);
+    this.particles = createParticleField(window.innerWidth < 900 ? 540 : 1050, 3.2);
     this.group.add(this.particles);
-
-    this.halo = new THREE.Mesh(
-      new THREE.RingGeometry(1.95, 1.98, 128),
-      new THREE.MeshBasicMaterial({
-        color: 0x6fe4ff,
-        transparent: true,
-        opacity: 0.17,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
-      }),
-    );
-    this.halo.rotation.x = Math.PI * 0.44;
-    this.halo.rotation.y = Math.PI * 0.12;
-    this.group.add(this.halo);
 
     this.setResponsivePosition();
     this.bindEvents();
-    const initialScene = document.documentElement.dataset.activeScene || "hero";
+    const hashScene = window.location.hash.slice(1);
+    const initialScene = hashScene || document.documentElement.dataset.activeScene || "hero";
     this.onSceneChange({ detail: { scene: initialScene } });
     this.resize();
 
@@ -215,11 +379,15 @@ export class SceneCanvas {
         this.animate();
       }
     };
+    this.onBurst = (event) => {
+      this.burst = Math.max(this.burst, event.detail?.strength || 0.5);
+    };
     this.onSceneChange = (event) => {
       const scene = event.detail?.scene;
-      this.sceneFadeTarget = scene === "hero" ? 1 : scene === "final" ? 0.42 : scene === "author" ? 0.02 : 0.008;
-      if (scene !== "hero" && this.sceneFade > 0.04) {
-        this.sceneFade = 0.04;
+      this.sceneFadeTarget = scene === "hero" ? 1 : scene === "manifesto" ? 0.035 : scene === "final" ? 0.38 : scene === "author" ? 0.025 : 0;
+      const immediateCap = scene === "manifesto" ? 0.035 : scene === "final" ? 0.38 : scene === "author" ? 0.025 : 0;
+      if (scene !== "hero" && this.sceneFade > immediateCap) {
+        this.sceneFade = immediateCap;
         this.applySceneFade();
       }
       if (this.motionQuery.matches) {
@@ -233,21 +401,23 @@ export class SceneCanvas {
     window.addEventListener("resize", this.onResize, { passive: true });
     document.addEventListener("visibilitychange", this.onVisibility);
     window.addEventListener("framezero:scenechange", this.onSceneChange);
+    window.addEventListener("framezero:burst", this.onBurst);
     this.motionQuery.addEventListener?.("change", this.onMotionChange);
   }
 
   setResponsivePosition() {
     if (!this.group) return;
-    const compact = window.innerWidth < 900;
-    this.group.position.set(compact ? 0.8 : 2.65, compact ? 1.35 : 0.45, -0.2);
-    this.group.scale.setScalar(compact ? 0.72 : 1);
+    const compact = window.innerWidth < 700;
+    const tablet = window.innerWidth >= 700 && window.innerWidth < 1100;
+    this.group.position.set(compact ? 0.62 : tablet ? 1.18 : 1.95, compact ? 1.5 : tablet ? 0.6 : 0.38, -0.2);
+    this.group.scale.setScalar(compact ? 0.58 : tablet ? 0.82 : 1);
   }
 
   resize() {
     if (!this.renderer) return;
     const width = window.innerWidth;
     const height = window.innerHeight;
-    const pixelRatio = Math.min(window.devicePixelRatio, width < 900 ? 1.25 : 1.65);
+    const pixelRatio = Math.min(window.devicePixelRatio, width < 900 ? 1.5 : 1.65);
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setPixelRatio(pixelRatio);
@@ -260,15 +430,16 @@ export class SceneCanvas {
 
   renderStill() {
     if (!this.composer) return;
-    this.coreMaterial.uniforms.uTime.value = 0.8;
+    this.reel.rotation.set(-0.2, -0.5, 0.08);
+    this.reel.userData.spool.rotation.z = 0.24;
     this.composer.render();
   }
 
   applySceneFade() {
-    this.coreMaterial.uniforms.uOpacity.value = this.sceneFade;
-    this.inner.material.opacity = 0.72 * this.sceneFade;
-    this.particles.material.opacity = 0.72 * Math.max(this.sceneFade, 0.012);
-    this.halo.material.opacity = 0.17 * this.sceneFade;
+    this.reel.userData.fadeMaterials.forEach((material) => {
+      material.opacity = material.userData.baseOpacity * this.sceneFade;
+    });
+    this.particles.material.opacity = 0.9 * Math.max(this.sceneFade, 0.11);
   }
 
   animate = () => {
@@ -283,17 +454,22 @@ export class SceneCanvas {
     const smoothing = 1 - Math.exp(-delta * 3.2);
     this.pointer.lerp(this.pointerTarget, smoothing);
     this.sceneFade += (this.sceneFadeTarget - this.sceneFade) * smoothing;
+    this.burst += (0 - this.burst) * (1 - Math.exp(-delta * 4.6));
     this.applySceneFade();
 
-    this.coreMaterial.uniforms.uTime.value = elapsed;
     this.group.rotation.y += (this.pointer.x * 0.2 - this.group.rotation.y) * smoothing;
     this.group.rotation.x += (-this.pointer.y * 0.12 - this.group.rotation.x) * smoothing;
-    this.core.rotation.z = elapsed * 0.035;
-    this.inner.rotation.y = -elapsed * 0.09;
+    this.reel.rotation.z = 0.08 + Math.sin(elapsed * 0.32) * 0.055 + this.burst * 0.12;
+    this.reel.rotation.y = -0.5 + elapsed * 0.18 + this.pointer.x * 0.13;
+    this.reel.rotation.x = -0.2 + Math.cos(elapsed * 0.21) * 0.1 - this.pointer.y * 0.08;
+    const reelScale = 1 + Math.sin(elapsed * 0.72) * 0.012 + this.burst * 0.065;
+    this.reel.scale.setScalar(reelScale);
+    this.reel.userData.spool.rotation.z = elapsed * 0.3 + this.burst * 0.52;
+    this.reel.userData.strip.userData.update(elapsed);
+    this.reel.userData.strip.rotation.z = Math.sin(elapsed * 0.58) * 0.035;
+    this.reel.userData.strip.rotation.x = Math.sin(elapsed * 0.42) * 0.026;
     this.particles.rotation.y = elapsed * 0.022;
     this.particles.rotation.z = Math.sin(elapsed * 0.16) * 0.08;
-    this.halo.rotation.z = elapsed * 0.045;
-
     this.composer.render();
     this.frameId = requestAnimationFrame(this.animate);
   };
@@ -304,6 +480,7 @@ export class SceneCanvas {
     window.removeEventListener("resize", this.onResize);
     document.removeEventListener("visibilitychange", this.onVisibility);
     window.removeEventListener("framezero:scenechange", this.onSceneChange);
+    window.removeEventListener("framezero:burst", this.onBurst);
     this.motionQuery.removeEventListener?.("change", this.onMotionChange);
     this.scene?.traverse((object) => {
       object.geometry?.dispose?.();

@@ -1,7 +1,7 @@
-function createVideo({ src, label }, className = "") {
+function createVideo({ src, poster, label }, className = "") {
   return `
-    <video class="project-video ${className}" muted loop playsinline preload="none" aria-label="${label}" data-project-video>
-      <source src="${src}" type="video/mp4">
+    <video class="project-video ${className}" muted loop playsinline preload="none" poster="${poster}" aria-label="${label}" data-project-video>
+      <source data-src="${src}" type="video/mp4">
     </video>
   `;
 }
@@ -31,6 +31,15 @@ export function createMediaFrame(project) {
   frame.className = `media-frame media-frame--${project.accent}`;
   frame.dataset.project = project.id;
 
+  const soundControl = project.media.hasAudio === false
+    ? ""
+    : `
+      <button class="media-frame__sound" type="button" data-sound-toggle data-sound-title="${project.title}" aria-pressed="false" aria-label="Включить звук в работе «${project.title}»">
+        <span class="media-frame__sound-icon" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span data-sound-label>Звук</span>
+      </button>
+    `;
+
   frame.innerHTML = `
     <div class="media-frame__topline">
       <span>Работа Евгения Тимошкина</span>
@@ -39,10 +48,7 @@ export function createMediaFrame(project) {
     ${createStage(project)}
     <div class="media-frame__credit">
       <span>${project.contribution}</span>
-      <button class="media-frame__sound" type="button" data-sound-toggle aria-pressed="false" aria-label="Включить звук в работе «${project.title}»">
-        <span class="media-frame__sound-icon" aria-hidden="true">◖</span>
-        <span data-sound-label>Звук</span>
-      </button>
+      ${soundControl}
     </div>
   `;
 

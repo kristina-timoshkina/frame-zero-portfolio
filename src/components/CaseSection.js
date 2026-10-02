@@ -1,5 +1,12 @@
 import { createMediaFrame } from "./MediaFrame.js";
 
+function formatDisplayTitle(title) {
+  return title.replaceAll(
+    "Й",
+    '<span class="case-letter-y" aria-hidden="true">И<svg class="case-letter-y__breve" viewBox="0 0 10 7" focusable="false"><path d="M1 1.2 C2.5 6.2 7.5 6.2 9 1.2" /></svg></span>',
+  );
+}
+
 export function createCaseSection(project, index) {
   const section = document.createElement("section");
   section.id = project.id;
@@ -11,7 +18,7 @@ export function createCaseSection(project, index) {
   content.innerHTML = `
     <div class="scene-index" aria-hidden="true">${project.number}</div>
     <p class="eyebrow">${project.eyebrow}</p>
-    <h2>${project.title}</h2>
+    <h2 aria-label="${project.title}">${formatDisplayTitle(project.title)}</h2>
     <p class="case-section__lead">${project.lead}</p>
     <dl class="case-facts">
       <div>
@@ -35,4 +42,3 @@ export function createCaseSection(project, index) {
 
   return section;
 }
-

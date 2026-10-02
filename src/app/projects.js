@@ -15,7 +15,9 @@ export const projects = [
     media: {
       kind: "single",
       src: "./media/clips/portal.m4v",
+      poster: "./media/posters/portal.jpg",
       label: "Портал, созданный Евгением в DaVinci Resolve Fusion",
+      hasAudio: false,
     },
   },
   {
@@ -23,7 +25,7 @@ export const projects = [
     number: "02",
     navTitle: "Buzz",
     eyebrow: "Работа из портфолио",
-    title: "34 секунды до действия",
+    title: "34 СЕКУНДЫ ДО ДЕЙСТВИЯ",
     lead: "Короткий англоязычный Reels объясняет сервис аренды пауэрбанков и ведёт к ближайшей станции.",
     contribution: "Монтаж · кинетическая типографика · motion · звук",
     task: "Познакомить зрителя с основателем и быстро объяснить механику сервиса.",
@@ -34,6 +36,7 @@ export const projects = [
     media: {
       kind: "single",
       src: "./media/clips/buzz.m4v",
+      poster: "./media/posters/buzz.jpg",
       label: "Фрагмент рекламного Reels для Buzz Powerbanks",
       layout: "portrait",
     },
@@ -43,7 +46,7 @@ export const projects = [
     number: "03",
     navTitle: "Масштаб",
     eyebrow: "Работа из портфолио",
-    title: "250 ГБ. Шесть матчей. Одна история.",
+    title: "250 ГБ. ШЕСТЬ МАТЧЕЙ. ОДНА ИСТОРИЯ.",
     lead: "Большой игровой день превращён в динамичную выжимку без потери масштаба и атмосферы турнира.",
     contribution: "Мультикам · синхронизация · цвет · Fairlight",
     task: "Систематизировать материал с разных камер и собрать шесть полноценных игр.",
@@ -54,6 +57,7 @@ export const projects = [
     media: {
       kind: "single",
       src: "./media/clips/football.m4v",
+      poster: "./media/posters/football.jpg",
       label: "Фрагмент итогового ролика футбольного турнира",
     },
   },
@@ -62,7 +66,7 @@ export const projects = [
     number: "04",
     navTitle: "История",
     eyebrow: "Трейлеры · музыка · ритм",
-    title: "Монтаж, который слышит историю",
+    title: "МОНТАЖ, КОТОРЫЙ СЛЫШИТ ИСТОРИЮ",
     lead: "Мрачная интернет-легенда, короткометражное кино и музыкальный клип — три разных ритма повествования.",
     contribution: "Драматургия · трейлерный монтаж · музыка · SFX",
     task: "Собрать разрозненные кадры в истории, которые удерживают внимание и не пересказывают всё заранее.",
@@ -73,6 +77,7 @@ export const projects = [
     media: {
       kind: "single",
       src: "./media/clips/story.m4v",
+      poster: "./media/posters/story.jpg",
       label: "Фрагмент трейлера Disturbing Internet Legends",
     },
   },
@@ -92,9 +97,9 @@ export const projects = [
     media: {
       kind: "mosaic",
       items: [
-        { src: "./media/clips/vfx-auto.m4v", label: "Световые эффекты для автомобиля" },
-        { src: "./media/clips/vfx-building.m4v", label: "VFX-разрушение здания" },
-        { src: "./media/clips/vfx-bear.m4v", label: "Surface Tracking на движущемся объекте" },
+        { src: "./media/clips/vfx-auto.m4v", poster: "./media/posters/vfx-auto.jpg", label: "Световые эффекты для автомобиля" },
+        { src: "./media/clips/vfx-building.m4v", poster: "./media/posters/vfx-building.jpg", label: "VFX-разрушение здания" },
+        { src: "./media/clips/vfx-bear.m4v", poster: "./media/posters/vfx-bear.jpg", label: "Surface Tracking на движущемся объекте" },
       ],
     },
   },
@@ -102,8 +107,13 @@ export const projects = [
 
 export const filmstripItems = [
   { id: "hero", number: "00", title: "FRAME ZERO" },
-  ...projects.map(({ id, number, navTitle: title }) => ({ id, number, title })),
-  { id: "formats", number: "06", title: "Форматы" },
-  { id: "author", number: "07", title: "Tim Cut" },
-  { id: "final", number: "08", title: "Финал" },
+  ...projects.map(({ id, number, navTitle: title, media }) => ({
+    id,
+    number,
+    title,
+    thumbnail: media.kind === "single" ? media.poster : media.items[0].poster,
+  })),
+  { id: "formats", number: "06", title: "Форматы", thumbnail: "./media/posters/shorts-showcase.jpg" },
+  { id: "author", number: "07", title: "Tim Cut", thumbnail: "./media/posters/tim-cut-logo.jpg" },
+  { id: "final", number: "08", title: "Финал", thumbnail: "./media/posters/portal.jpg" },
 ];
