@@ -1,0 +1,29 @@
+:root {
+  color-scheme: dark;
+  --ink: #050711;
+  --ink-soft: #0a0d1a;
+  --paper: #f3f5fb;
+  --paper-muted: rgba(235, 240, 255, 0.68);
+  --line: rgba(220, 232, 255, 0.16);
+  --line-bright: rgba(220, 239, 255, 0.38);
+  --violet: #7868ff;
+  --violet-dark: #392678;
+  --cyan: #6fe4ff;
+  --ice: #c8f5ff;
+  --velvet: #a65df3;
+  --coral: #ff796e;
+  --ember: #ff9f52;
+  --content: min(1180px, calc(100vw - 10rem));
+  --filmstrip-width: 6.4rem;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --display: "Avenir Next Condensed", "DIN Condensed", "Arial Narrow", sans-serif;
+  --body: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --content: min(100% - 2rem, 44rem);
+    --filmstrip-width: 0rem;
+  }
+}
+
