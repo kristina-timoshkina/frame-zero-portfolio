@@ -296,6 +296,17 @@
   word-spacing: 0;
 }
 
+#story h2 {
+  line-height: 1.16;
+}
+
+#buzz h2,
+#vfx h2 {
+  padding-inline-end: 0.32em;
+  letter-spacing: -0.004em;
+  overflow: visible;
+}
+
 .scene-index {
   position: absolute;
   top: -5rem;
@@ -393,12 +404,15 @@
 }
 
 .final h2 {
+  box-sizing: border-box;
   max-width: min(100%, 64rem);
   margin-right: auto;
   margin-left: auto;
+  padding-inline: 0.18em;
   font-size: clamp(3.25rem, 7.25vw, 7.6rem);
-  letter-spacing: -0.025em;
-  line-height: 0.97;
+  font-kerning: none;
+  letter-spacing: -0.018em;
+  line-height: 1.1;
   text-wrap: balance;
 }
 
@@ -563,8 +577,8 @@
 
   .final h2 {
     font-size: clamp(2.55rem, 11vw, 3.8rem);
-    letter-spacing: -0.02em;
-    line-height: 0.99;
+    letter-spacing: -0.014em;
+    line-height: 1.1;
   }
 
   .manifesto,
