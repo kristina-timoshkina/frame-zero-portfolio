@@ -421,6 +421,10 @@
   margin-left: 0.035em;
 }
 
+.final__word {
+  white-space: nowrap;
+}
+
 @media (min-width: 701px) and (max-width: 1100px) {
   .site-header {
     padding: 0 2rem;
