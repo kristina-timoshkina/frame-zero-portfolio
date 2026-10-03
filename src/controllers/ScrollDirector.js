@@ -107,6 +107,7 @@ export class ScrollDirector {
           clipPath: "inset(0 0 0% 0)",
           duration: 0.9,
           ease: "power4.out",
+          onComplete: () => gsap.set(title, { clearProps: "clipPath" }),
           scrollTrigger: { trigger: section, start: "top 68%", once: true },
         },
       );
