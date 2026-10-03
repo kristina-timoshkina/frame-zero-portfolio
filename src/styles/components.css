@@ -748,12 +748,15 @@
 }
 
 .format-portal__copy h2 {
+  box-sizing: border-box;
   max-width: 100%;
+  padding-inline-end: 0.12em;
   font-size: clamp(3rem, 4.6vw, 5.5rem);
   letter-spacing: -0.015em;
-  line-height: 1.01;
+  line-height: 1.1;
   overflow-wrap: normal;
   text-wrap: balance;
+  word-break: normal;
 }
 
 .format-portal__lead {
@@ -948,7 +951,7 @@ body.is-format-open #app > main {
   .format-portal__copy h2 {
     font-size: clamp(2.35rem, 10.8vw, 3.5rem);
     letter-spacing: -0.01em;
-    line-height: 1.03;
+    line-height: 1.1;
   }
 
   .format-portal__lead { font-size: 1rem; }
@@ -979,7 +982,7 @@ body.is-format-open #app > main {
 
   .format-portal__copy h2 {
     font-size: clamp(2.6rem, 4.8vw, 3.25rem);
-    line-height: 1.02;
+    line-height: 1.1;
   }
 
   .format-portal__lead {

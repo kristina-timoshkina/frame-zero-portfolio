@@ -210,7 +210,7 @@
   font-family: var(--display);
   font-size: clamp(3.5rem, 8vw, 8.5rem);
   font-weight: 560;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.018em;
   line-height: 0.94;
   text-wrap: balance;
   text-transform: uppercase;
@@ -233,8 +233,14 @@
   margin-top: clamp(0.55rem, 1.1vw, 1rem);
 }
 
-.manifesto__line span {
+.manifesto__line .manifesto__punct {
   color: var(--coral);
+}
+
+.manifesto__ending {
+  color: inherit;
+  font-kerning: none;
+  letter-spacing: 0.018em;
 }
 
 .case-section {
@@ -274,15 +280,19 @@
 .case-section__content {
   position: relative;
   z-index: 2;
+  min-width: 0;
 }
 
 .case-section h2 {
+  box-sizing: border-box;
   max-width: min(100%, 42rem);
+  padding-inline-end: 0.12em;
   font-size: clamp(2.85rem, 5.2vw, 5.65rem);
-  line-height: 1.02;
+  line-height: 1.1;
   letter-spacing: -0.012em;
   overflow-wrap: normal;
   text-wrap: balance;
+  word-break: normal;
   word-spacing: 0;
 }
 
@@ -353,11 +363,15 @@
 }
 
 .formats h2 {
+  box-sizing: border-box;
   max-width: 11ch;
+  padding-inline-end: 0.12em;
   font-size: clamp(3rem, 5.7vw, 6.25rem);
   letter-spacing: -0.02em;
-  line-height: 0.98;
+  line-height: 1.1;
+  overflow-wrap: normal;
   text-wrap: balance;
+  word-break: normal;
 }
 
 .formats h2 span {
@@ -465,7 +479,7 @@
 
   .manifesto__line {
     font-size: clamp(3.8rem, 9vw, 5.6rem);
-    line-height: 0.9;
+    line-height: 0.98;
   }
 
   .manifesto__line--offset { margin-left: 5vw; }
@@ -532,19 +546,19 @@
     max-width: 100%;
     font-size: clamp(2.25rem, 10vw, 3rem);
     letter-spacing: -0.01em;
-    line-height: 1.03;
+    line-height: 1.1;
   }
 
   .manifesto__line {
     font-size: clamp(2.45rem, 11.5vw, 3.5rem);
-    letter-spacing: -0.02em;
-    line-height: 0.99;
+    letter-spacing: -0.012em;
+    line-height: 1.02;
   }
 
   .formats h2 {
     max-width: 10ch;
     font-size: clamp(2.5rem, 11vw, 3.6rem);
-    line-height: 1;
+    line-height: 1.1;
   }
 
   .final h2 {
