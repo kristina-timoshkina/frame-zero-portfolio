@@ -58,9 +58,9 @@ function createManifesto() {
   section.innerHTML = `
     <p class="eyebrow">Из материала — в ощущение</p>
     <p class="manifesto__line">Видео, которое</p>
-    <p class="manifesto__line manifesto__line--accent">объясняет<span>,</span></p>
-    <p class="manifesto__line manifesto__line--offset">удерживает<span>,</span></p>
-    <p class="manifesto__line">вызывает эмоцию<span>.</span></p>
+    <p class="manifesto__line manifesto__line--accent">объясня<span class="manifesto__ending">ет</span><span class="manifesto__punct">,</span></p>
+    <p class="manifesto__line manifesto__line--offset">удержива<span class="manifesto__ending">ет</span><span class="manifesto__punct">,</span></p>
+    <p class="manifesto__line">вызыва<span class="manifesto__ending">ет</span> эмоцию<span class="manifesto__punct">.</span></p>
   `;
   return section;
 }
