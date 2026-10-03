@@ -115,7 +115,7 @@ function createFinal() {
   section.dataset.scene = "final";
   section.innerHTML = `
     <p class="eyebrow">Финальный кадр</p>
-    <h2>Обычный кадр<br>заканчивается здесь.</h2>
+    <h2>Обычный кадр<br>заканчивае<span class="final__et-gap">т</span>ся здесь.</h2>
     <p class="final__statement">Следующая история начинается с идеи.</p>
     <div class="final__actions">
       <a class="button button--primary" href="#hero">Пережить ещё раз <span aria-hidden="true">↑</span></a>
