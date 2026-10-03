@@ -291,6 +291,11 @@
   display: inline-block;
 }
 
+.case-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .case-letter-y__breve {
   position: absolute;
   top: -0.12em;
