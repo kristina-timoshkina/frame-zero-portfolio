@@ -16,7 +16,7 @@
   --content: min(1180px, calc(100vw - 10rem));
   --filmstrip-width: 6.4rem;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --display: "Avenir Next Condensed", "DIN Condensed", "Arial Narrow", sans-serif;
+  --display: "Oswald Variable", "Arial Narrow", sans-serif;
   --body: "Avenir Next", "Segoe UI", sans-serif;
 }
 

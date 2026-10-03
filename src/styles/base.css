@@ -113,8 +113,8 @@ h2 {
   font-family: var(--display);
   font-size: clamp(3.4rem, 7vw, 7.8rem);
   font-weight: 600;
-  letter-spacing: -0.055em;
-  line-height: 0.87;
+  letter-spacing: -0.025em;
+  line-height: 0.95;
   text-transform: uppercase;
 }
 
