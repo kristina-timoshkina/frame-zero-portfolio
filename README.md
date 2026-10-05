@@ -6,6 +6,8 @@
 
 [Открыть опубликованный сайт →](https://kristina-timoshkina.github.io/frame-zero-portfolio/)
 
+<img src="screenshots/frame-zero-home.png" width="900">
+
 ## Локальный запуск
 
 ```bash
