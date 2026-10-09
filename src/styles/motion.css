@@ -173,6 +173,11 @@ html.montage-entering body::after {
     animation: none;
   }
 
+  .hero__zero-ring::before,
+  .hero__zero-ring i {
+    animation: none;
+  }
+
   html.montage-entering body::after {
     animation: none;
   }
