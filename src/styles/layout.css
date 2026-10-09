@@ -101,6 +101,103 @@
   color: transparent;
 }
 
+.hero__montage-entry {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  border-radius: 50%;
+  isolation: isolate;
+}
+
+.hero__montage-entry:focus-visible {
+  outline-width: 3px;
+  outline-offset: 0.08em;
+}
+
+.hero__montage-callout {
+  position: absolute;
+  top: 52%;
+  left: calc(100% + 0.16em);
+  display: flex;
+  align-items: center;
+  gap: clamp(0.55rem, 0.8vw, 0.85rem);
+  color: #f2e7d5;
+  font-family: var(--body);
+  font-size: clamp(0.66rem, 0.82vw, 0.82rem);
+  font-weight: 750;
+  letter-spacing: 0.2em;
+  line-height: 1;
+  text-shadow: 0 0 1rem rgba(243, 231, 213, 0.2);
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: translateY(-50%);
+  transition: color 220ms ease, text-shadow 220ms ease, transform 320ms var(--ease-out);
+}
+
+.hero__montage-callout strong {
+  font: inherit;
+}
+
+.hero__montage-line {
+  position: relative;
+  width: clamp(1.8rem, 2.5vw, 3.2rem);
+  height: 1px;
+  flex: 0 0 auto;
+  background: linear-gradient(90deg, var(--coral), var(--cyan) 24%, rgba(111, 228, 255, 0.35));
+  box-shadow: 0 0 0.7rem rgba(111, 228, 255, 0.45);
+  transform-origin: left center;
+}
+
+.hero__montage-line::before {
+  position: absolute;
+  top: 50%;
+  left: -0.18rem;
+  width: 0.52rem;
+  height: 0.52rem;
+  background: var(--coral);
+  clip-path: polygon(0 50%, 100% 0, 100% 100%);
+  content: "";
+  filter: drop-shadow(0 0 0.35rem rgba(255, 121, 110, 0.75));
+  transform: translateY(-50%);
+}
+
+.hero__montage-line::after {
+  position: absolute;
+  top: -2px;
+  left: 0;
+  width: 22%;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(232, 253, 255, 0.96);
+  content: "";
+  filter: blur(1px) drop-shadow(0 0 0.45rem var(--cyan));
+  opacity: 0;
+}
+
+.hero__montage-entry:hover .hero__zero-ring,
+.hero__montage-entry:focus-visible .hero__zero-ring {
+  border-color: rgba(237, 252, 255, 0.96);
+  box-shadow: inset 0 0 0.2em rgba(111, 228, 255, 0.18), 0 0 0.28em rgba(111, 228, 255, 0.48);
+}
+
+.hero__montage-entry:hover .hero__zero-ring i,
+.hero__montage-entry:focus-visible .hero__zero-ring i {
+  animation-duration: 1.35s;
+}
+
+.hero__montage-entry:hover .hero__montage-callout,
+.hero__montage-entry:focus-visible .hero__montage-callout {
+  color: #fffaf1;
+  text-shadow: 0 0 0.8rem rgba(255, 255, 255, 0.45), 0 0 1.3rem rgba(255, 121, 110, 0.22);
+  transform: translate(0.18rem, -50%);
+}
+
+.hero__montage-entry:hover .hero__montage-line::after,
+.hero__montage-entry:focus-visible .hero__montage-line::after {
+  animation: montage-line-scan 900ms var(--ease-out) infinite;
+}
+
 .hero__zero-ring {
   position: relative;
   display: inline-block;
@@ -145,6 +242,20 @@
 
 @keyframes zero-orbit {
   to { transform: rotate(360deg); }
+}
+
+@keyframes montage-line-scan {
+  0% { opacity: 0; transform: translateX(0); }
+  24% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(360%); }
+}
+
+@media (max-width: 700px) {
+  @keyframes montage-line-scan {
+    0% { opacity: 0; transform: translateY(0); }
+    24% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(360%); }
+  }
 }
 
 .hero__statement {
@@ -532,10 +643,48 @@
     font-size: clamp(5.7rem, 29vw, 9rem);
   }
 
+  .hero__montage-callout {
+    top: calc(100% + 0.16em);
+    left: 50%;
+    flex-direction: column;
+    gap: 0.38rem;
+    font-size: 0.64rem;
+    transform: translateX(-50%);
+  }
+
+  .hero__montage-line {
+    width: 1px;
+    height: 1.45rem;
+    background: linear-gradient(180deg, var(--coral), var(--cyan) 30%, rgba(111, 228, 255, 0.32));
+  }
+
+  .hero__montage-line::before {
+    top: -0.18rem;
+    left: 50%;
+    clip-path: polygon(50% 0, 100% 100%, 0 100%);
+    transform: translateX(-50%);
+  }
+
+  .hero__montage-line::after {
+    top: 0;
+    left: -2px;
+    width: 5px;
+    height: 22%;
+  }
+
+  .hero__montage-entry:hover .hero__montage-callout,
+  .hero__montage-entry:focus-visible .hero__montage-callout {
+    transform: translate(-50%, 0.16rem);
+  }
+
   .hero__statement,
   .hero__intro,
   .hero__actions {
     margin-left: 0;
+  }
+
+  .hero__statement {
+    margin-top: 5.4rem;
   }
 
   .hero__actions {

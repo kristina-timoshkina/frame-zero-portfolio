@@ -424,8 +424,8 @@ export class SceneCanvas {
     if (!this.group) return;
     const compact = window.innerWidth < 700;
     const tablet = window.innerWidth >= 700 && window.innerWidth < 1100;
-    this.group.position.set(compact ? 0.62 : tablet ? 1.18 : 1.95, compact ? 1.5 : tablet ? 0.6 : 0.38, -0.2);
-    this.group.scale.setScalar(compact ? 0.58 : tablet ? 0.82 : 1);
+    this.group.position.set(compact ? 1.7 : tablet ? 1.7 : 2.75, compact ? 1.65 : tablet ? 0.6 : 0.38, -0.2);
+    this.group.scale.setScalar(compact ? 0.42 : tablet ? 0.82 : 1);
   }
 
   resize() {
