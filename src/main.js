@@ -133,16 +133,6 @@ if ("requestIdleCallback" in window) {
   window.setTimeout(loadSceneCanvas, 80);
 }
 
-const directionButton = document.querySelector("[data-open-directions]");
-const directionPanel = document.querySelector(".direction-panel");
-
-directionButton?.addEventListener("click", () => {
-  const shouldOpen = directionPanel.hidden;
-  directionPanel.hidden = !shouldOpen;
-  directionButton.setAttribute("aria-expanded", String(shouldOpen));
-  if (shouldOpen) directionPanel.querySelector("a")?.focus();
-});
-
 const scenes = [...document.querySelectorAll("[data-scene]")];
 const sceneLinks = [...document.querySelectorAll("[data-scene-link]")];
 

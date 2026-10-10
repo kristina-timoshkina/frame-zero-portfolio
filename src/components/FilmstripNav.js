@@ -12,6 +12,7 @@ export function createFilmstripNav(items) {
     const link = document.createElement("a");
     link.href = `#${item.id}`;
     link.dataset.sceneLink = item.id;
+    link.setAttribute("aria-label", `${item.number} ${item.title} — перейти к сцене`);
     link.innerHTML = `
       <span class="filmstrip__perforation" aria-hidden="true"></span>
       <span class="filmstrip__frame">
