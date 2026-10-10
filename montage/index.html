@@ -27,6 +27,8 @@
   <meta name="twitter:image" content="https://kristina-timoshkina.github.io/frame-zero-portfolio/og-frame-zero.png" />
   <meta name="twitter:image:alt" content="FRAME ZERO — кейс монтажа фильма «Накладно»" />
   <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+  <link rel="preload" as="image" href="./media/editing-pavilion-wide.avif" type="image/avif" fetchpriority="high" />
+  <link rel="preload" as="image" href="./media/nakladno-storyboard.avif" type="image/avif" />
   <title>Монтаж фильма «Накладно» — кейс Евгения Тимошкина | FRAME ZERO</title>
   <script type="application/ld+json">
     {
@@ -118,8 +120,9 @@
     .stage-brief h2{margin:0 0 6px;font-size:clamp(14px,1.45vw,24px);font-weight:560;letter-spacing:-.015em}.stage-brief p{margin:0;color:rgba(255,255,255,.67);font-size:clamp(8px,.72vw,12px);line-height:1.5}
     .stage-actions{display:flex;align-items:center;gap:7px;margin-top:13px}.prev,.next,.watch-full{border-radius:99px;cursor:pointer;font-size:clamp(5px,.48vw,8px);font-weight:800;letter-spacing:.13em;text-transform:uppercase;transition:transform .18s ease,background .25s ease,border-color .25s ease}.prev{width:30px;height:30px;padding:0;color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.3);background:transparent}.prev:disabled{opacity:.25;cursor:default}.next{display:flex;align-items:center;gap:8px;padding:4px 11px 4px 4px;color:var(--ink);border:1px solid var(--paper);background:var(--paper)}.next i{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;color:white;background:var(--red);font-style:normal;box-shadow:0 0 0 5px rgba(234,78,67,.13)}.next:hover{transform:translateY(-2px)}.watch-full{display:none;padding:9px 11px;color:white;border:1px solid rgba(255,255,255,.32);background:transparent}.stage-final .watch-full{display:inline-block}
 
-    .monitor{position:absolute;z-index:6;overflow:hidden;background:#020304;box-shadow:inset 0 0 12px rgba(0,0,0,.9),0 0 21px rgba(99,213,229,.26);transition:box-shadow .5s ease,filter .45s ease,opacity .4s ease}
-    .monitor img{display:block;width:100%;height:100%;object-fit:cover;filter:brightness(1.06) saturate(.98)}
+    .monitor{position:absolute;z-index:6;overflow:hidden;background:radial-gradient(circle at 50% 45%,rgba(99,213,229,.16),rgba(2,3,4,.96) 68%);box-shadow:inset 0 0 12px rgba(0,0,0,.9),0 0 21px rgba(99,213,229,.26);transition:box-shadow .5s ease,filter .45s ease,opacity .4s ease}
+    .monitor img{display:block;width:100%;height:100%;object-fit:cover;opacity:0;filter:brightness(1.06) saturate(.98);transition:opacity .28s ease}
+    .monitor img.is-ready{opacity:1}
     .main-screen{left:36.38%;top:23.1%;width:27.24%;height:25.8%;clip-path:inset(0 .8%)}
     .main-screen.timeline img{object-position:50% 67%;transform:scale(1.06)}
     .main-screen.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:#080a0b}
@@ -342,7 +345,7 @@
     <section class="room-shell">
       <div class="room-viewport" id="viewport">
         <div class="room-canvas stage-0" id="canvas">
-          <img class="room-bg" src="./media/editing-pavilion-wide.jpg" alt="Светлая монтажная с большим экраном и рабочей консолью" />
+          <picture><source srcset="./media/editing-pavilion-wide.avif" type="image/avif" /><img class="room-bg" src="./media/editing-pavilion-wide.jpg" width="1672" height="941" fetchpriority="high" decoding="async" alt="Светлая монтажная с большим экраном и рабочей консолью" /></picture>
           <div class="monitor main-screen" id="main-screen"></div>
           <div class="screen-caption" id="screen-caption" aria-live="polite">Раскадровка · монтажные листы</div>
           <div class="monitor side-left"><img id="side-left" alt="Левый экран монтажной" /></div>
@@ -388,7 +391,7 @@
   <section class="viewer" id="viewer" aria-hidden="true">
     <div class="viewer-card">
       <div class="viewer-top"><div><span id="viewer-type">Трейлер · 00:35</span> · «Накладно»</div><button class="close" id="close" type="button">Закрыть ×</button></div>
-      <video id="player" controls playsinline poster="./media/film-guitar.jpg"></video>
+      <video id="player" controls playsinline></video>
       <p class="viewer-note" id="viewer-note">Видео загружается только после нажатия и не замедляет появление комнаты.</p>
     </div>
   </section>
@@ -396,6 +399,24 @@
 
   <script>
     const F='./media/';
+    const imageName=name=>name.replace(/\.jpg$/i,'.avif');
+    const imageWarmups=new Map();
+    function warmImage(name,priority='low'){
+      const source=F+imageName(name);
+      if(imageWarmups.has(source))return imageWarmups.get(source);
+      const preload=new Image();preload.decoding='async';preload.fetchPriority=priority;
+      const ready=new Promise(resolve=>{preload.onload=()=>resolve(true);preload.onerror=()=>resolve(false)});
+      preload.src=source;imageWarmups.set(source,ready);return ready
+    }
+    function loadImage(img,name,priority='auto'){
+      let fallback=false;img.classList.remove('is-ready');img.decoding='async';img.fetchPriority=priority;
+      img.onload=()=>img.classList.add('is-ready');
+      img.onerror=()=>{if(fallback)return;fallback=true;img.src=F+name};
+      img.src=F+imageName(name);return img
+    }
+    function createStageImage(name,alt,priority='auto'){
+      const img=document.createElement('img');img.alt=alt;return loadImage(img,name,priority)
+    }
     const stages=[
       {name:'Исходники',label:'Зал 01 · разбор материала',time:'00:00:00:00',heading:'Понять, что снято',copy:'Сверить сценарий, монтажные листы, раскадровку, хлопушки и дубли. Цель зала — увидеть будущую историю внутри разрозненного материала.',type:'image',main:['nakladno-storyboard.jpg'],tag:'Раскадровка · монтажные листы',side:['nakladno-edit-notes.jpg','nakladno-slate.jpg'],desk:['nakladno-source-slate.jpg','nakladno-storyboard.jpg','nakladno-edit-notes.jpg'],next:'Дальше: отбор кадров'},
       {name:'Отбор',label:'Зал 02 · отбор дублей',time:'00:01:12:08',heading:'Найти точные реакции',copy:'Сверить номера сцен и дублей, выбрать взгляды, паузы и реакции. Цель зала — оставить только кадры, которые двигают историю.',type:'grid',main:['film-dialogue.jpg','film-reaction.jpg','film-conflict.jpg'],tag:'Выбранные дубли',side:['film-cat.jpg','film-record.jpg'],desk:['contact-film-1.jpg','contact-film-2.jpg','contact-film-3.jpg'],next:'Дальше: собрать монтаж'},
@@ -405,6 +426,15 @@
     const viewport=document.getElementById('viewport'),canvas=document.getElementById('canvas'),main=document.getElementById('main-screen'),screenCaption=document.getElementById('screen-caption'),steps=document.getElementById('steps'),next=document.getElementById('next'),prev=document.getElementById('prev');
     const trailerControls=document.getElementById('trailer-controls'),trailerPlay=document.getElementById('trailer-play'),trailerSound=document.getElementById('trailer-sound'),trailerProgress=document.getElementById('trailer-progress'),trailerTime=document.getElementById('trailer-time');
     let current=0,busy=false,trailerClip=null,trailerStarted=false;
+    const stageAssets=stage=>[...new Set([...stage.main,...stage.side,...stage.desk])];
+    function warmStage(index,priority='low'){
+      if(index<0||index>=stages.length)return Promise.resolve();
+      return Promise.all(stageAssets(stages[index]).map(name=>warmImage(name,priority)))
+    }
+    function scheduleStageWarmup(index){
+      const run=async()=>{await warmStage(index+1,'low');for(let offset=2;offset<stages.length;offset+=1)await warmStage((index+offset)%stages.length,'low')};
+      if('requestIdleCallback'in window)requestIdleCallback(run,{timeout:1400});else setTimeout(run,180)
+    }
     stages.forEach((s,i)=>{const b=document.createElement('button');b.type='button';b.className='step';b.innerHTML=`<small>0${i+1}</small><span>${s.name}</span>`;b.onclick=()=>moveTo(i);steps.appendChild(b)});
     function bindCompare(compare){
       let dragging=false;
@@ -424,17 +454,19 @@
       main.className='monitor main-screen '+(s.type==='grid'?'grid':s.type==='timeline'?'timeline':s.type==='final'?'final':'');main.innerHTML='';
       if(s.type==='final'){
         const compare=document.createElement('div');compare.className='compare';compare.tabIndex=0;compare.setAttribute('role','slider');compare.setAttribute('aria-label','Сравнение кадра до и после цветокоррекции');compare.setAttribute('aria-valuemin','8');compare.setAttribute('aria-valuemax','92');compare.setAttribute('aria-valuenow','50');
-        compare.innerHTML=`<img class="compare-img compare-after" src="${F+s.main[0]}" alt="После цветокоррекции"><img class="compare-img compare-before" src="${F+s.main[0]}" alt="До цветокоррекции"><span class="compare-label before">До обработки</span><span class="compare-label after">После обработки</span><span class="compare-hint">Потяните ползунок</span><i class="compare-handle">↔</i>`;
+        const after=createStageImage(s.main[0],'После цветокоррекции','high');after.classList.add('compare-img','compare-after');
+        const before=createStageImage(s.main[0],'До цветокоррекции','high');before.classList.add('compare-img','compare-before');
+        compare.append(after,before);compare.insertAdjacentHTML('beforeend','<span class="compare-label before">До обработки</span><span class="compare-label after">После обработки</span><span class="compare-hint">Потяните ползунок</span><i class="compare-handle">↔</i>');
         main.appendChild(compare);bindCompare(compare);
         const reveal=document.createElement('strong');reveal.className='final-reveal';reveal.textContent='Финальный результат';main.appendChild(reveal);
       }else{
-        s.main.forEach(n=>{const img=document.createElement('img');img.src=F+n;img.alt=s.tag;main.appendChild(img)});
+        s.main.forEach(n=>main.appendChild(createStageImage(n,s.tag,'high')));
         if(s.type==='timeline'){const scan=document.createElement('i');scan.className='scan';main.appendChild(scan)}
       }
     }
     function animateTitle(){const title=document.getElementById('project-title');title.classList.remove('play');void title.offsetWidth;title.classList.add('play')}
     function commit(i){
-      const s=stages[i];current=i;viewport.dataset.stage=i;canvas.className='room-canvas stage-'+i;renderMain(s);screenCaption.textContent=s.tag;screenCaption.setAttribute('aria-hidden',s.type==='final'?'true':'false');document.getElementById('side-left').src=F+s.side[0];document.getElementById('side-right').src=F+s.side[1];['desk-left','desk-center','desk-right'].forEach((id,k)=>document.getElementById(id).src=F+s.desk[k]);document.getElementById('stage-number').textContent='0'+(i+1);document.getElementById('stage-name').textContent=s.name;document.getElementById('stage-label').textContent=s.label;document.getElementById('timecode').textContent=s.time;document.getElementById('heading').textContent=s.heading;document.getElementById('copy').textContent=s.copy;next.querySelector('span').textContent=s.next;next.setAttribute('aria-label',s.next);next.title=s.next;prev.disabled=i===0;const prevLabel=i>0?'Назад: '+stages[i-1].name:'Предыдущий зал';prev.querySelector('span').textContent=prevLabel;prev.setAttribute('aria-label',prevLabel);prev.title=prevLabel;document.body.classList.toggle('stage-final',i===3);[...steps.children].forEach((b,k)=>b.classList.toggle('active',k===i));animateTitle()
+      const s=stages[i];current=i;viewport.dataset.stage=i;canvas.className='room-canvas stage-'+i;renderMain(s);screenCaption.textContent=s.tag;screenCaption.setAttribute('aria-hidden',s.type==='final'?'true':'false');loadImage(document.getElementById('side-left'),s.side[0]);loadImage(document.getElementById('side-right'),s.side[1]);['desk-left','desk-center','desk-right'].forEach((id,k)=>loadImage(document.getElementById(id),s.desk[k]));document.getElementById('stage-number').textContent='0'+(i+1);document.getElementById('stage-name').textContent=s.name;document.getElementById('stage-label').textContent=s.label;document.getElementById('timecode').textContent=s.time;document.getElementById('heading').textContent=s.heading;document.getElementById('copy').textContent=s.copy;next.querySelector('span').textContent=s.next;next.setAttribute('aria-label',s.next);next.title=s.next;prev.disabled=i===0;const prevLabel=i>0?'Назад: '+stages[i-1].name:'Предыдущий зал';prev.querySelector('span').textContent=prevLabel;prev.setAttribute('aria-label',prevLabel);prev.title=prevLabel;document.body.classList.toggle('stage-final',i===3);[...steps.children].forEach((b,k)=>b.classList.toggle('active',k===i));animateTitle();scheduleStageWarmup(i)
     }
     function moveTo(i){if(busy||i<0||i>=stages.length||i===current)return;busy=true;document.getElementById('transition-title').textContent=stages[i].name;document.getElementById('transition-purpose').textContent=stages[i].heading;document.getElementById('transition-small').textContent=`Зал 0${i+1} · ${i>current?'следующий этап':'предыдущий этап'}`;viewport.classList.remove('opening');viewport.classList.add('changing');setTimeout(()=>commit(i),720);setTimeout(()=>{viewport.classList.add('opening')},1220);setTimeout(()=>{viewport.classList.remove('changing','opening');busy=false},1980)}
     const formatTime=value=>{const seconds=Number.isFinite(value)?Math.max(0,Math.floor(value)):0;return String(Math.floor(seconds/60)).padStart(2,'0')+':'+String(seconds%60).padStart(2,'0')};
@@ -453,7 +485,7 @@
     const experience=document.querySelector('.experience'),exitRoom=document.getElementById('exit-room');
     exitRoom.addEventListener('click',event=>{event.preventDefault();if(experience.classList.contains('room-exiting'))return;const destination=exitRoom.href;experience.classList.add('room-exiting');const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;window.setTimeout(()=>{window.location.href=destination},reduced?0:1150);window.setTimeout(()=>experience.classList.remove('room-exiting'),1750)});
     const viewer=document.getElementById('viewer'),player=document.getElementById('player');
-    function openViewer(kind){const full=kind==='film';document.getElementById('viewer-type').textContent=full?'Полный фильм · 03:42':'Трейлер · 00:35';document.getElementById('viewer-note').textContent=full?'Полная версия собрана из трёх частей и облегчена для веб-просмотра.':'Трейлер показывает персонажей, атмосферу и конфликт, не пересказывая сюжет.';player.src=F+(full?'nakladno-full-web.mp4':'nakladno-trailer-web.mp4');viewer.classList.add('open');viewer.setAttribute('aria-hidden','false')}
+    function openViewer(kind){const full=kind==='film';document.getElementById('viewer-type').textContent=full?'Полный фильм · 03:42':'Трейлер · 00:35';document.getElementById('viewer-note').textContent=full?'Полная версия собрана из трёх частей и облегчена для веб-просмотра.':'Трейлер показывает персонажей, атмосферу и конфликт, не пересказывая сюжет.';player.poster=F+'film-guitar.jpg';player.src=F+(full?'nakladno-full-web.mp4':'nakladno-trailer-web.mp4');viewer.classList.add('open');viewer.setAttribute('aria-hidden','false')}
     function closeViewer(){player.pause();player.removeAttribute('src');player.load();viewer.classList.remove('open');viewer.setAttribute('aria-hidden','true')}document.getElementById('close').onclick=closeViewer;viewer.onclick=e=>{if(e.target===viewer)closeViewer()};document.onkeydown=e=>{if(e.key==='Escape')closeViewer()};commit(0);
   </script>
 </body>

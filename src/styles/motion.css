@@ -142,7 +142,7 @@ html.montage-entering {
 }
 
 html.montage-entering body::after {
-  animation: montage-iris-enter 760ms var(--ease-out) both;
+  animation: montage-iris-enter 400ms var(--ease-out) both;
 }
 
 @keyframes montage-iris-enter {

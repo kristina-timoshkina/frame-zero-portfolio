@@ -12,6 +12,59 @@ app.append(createAppShell());
 const interactionDirector = new InteractionDirector();
 
 const montageEntry = document.querySelector(".hero__montage-entry");
+
+const montageWarmAssets = [
+  "./montage/media/editing-pavilion-wide.avif",
+  "./montage/media/nakladno-storyboard.avif",
+  "./montage/media/nakladno-edit-notes.avif",
+  "./montage/media/nakladno-slate.avif",
+  "./montage/media/nakladno-source-slate.avif",
+];
+const warmedMontageImages = new Map();
+let montageDocumentWarmup = null;
+
+const warmMontageImage = (source, priority = "low") => {
+  if (warmedMontageImages.has(source)) {
+    const image = warmedMontageImages.get(source);
+    if (priority === "high") image.fetchPriority = "high";
+    return image.decode?.().catch(() => undefined) ?? Promise.resolve();
+  }
+
+  const image = new Image();
+  image.decoding = "async";
+  image.fetchPriority = priority;
+  image.src = new URL(source, document.baseURI).href;
+  warmedMontageImages.set(source, image);
+  return image.decode?.().catch(() => undefined) ?? Promise.resolve();
+};
+
+const warmMontage = (priority = "low") => {
+  if (!montageDocumentWarmup) {
+    montageDocumentWarmup = fetch(new URL("./montage/", document.baseURI), {
+      credentials: "same-origin",
+      priority,
+    }).catch(() => undefined);
+  }
+  montageWarmAssets.forEach((source) => warmMontageImage(source, priority));
+  return montageDocumentWarmup;
+};
+
+if (montageEntry) {
+  ["pointerenter", "focusin", "touchstart"].forEach((eventName) => {
+    montageEntry.addEventListener(eventName, () => warmMontage("high"), {
+      once: eventName !== "focusin",
+      passive: eventName === "touchstart",
+    });
+  });
+
+  const scheduleMontageWarmup = () => warmMontage("low");
+  if ("requestIdleCallback" in window) {
+    window.requestIdleCallback(scheduleMontageWarmup, { timeout: 700 });
+  } else {
+    window.setTimeout(scheduleMontageWarmup, 180);
+  }
+}
+
 montageEntry?.addEventListener("click", (event) => {
   if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
   event.preventDefault();
@@ -27,8 +80,9 @@ montageEntry?.addEventListener("click", (event) => {
   document.documentElement.style.setProperty("--montage-x", `${bounds.left + bounds.width / 2}px`);
   document.documentElement.style.setProperty("--montage-y", `${bounds.top + bounds.height / 2}px`);
   document.documentElement.classList.add("montage-entering");
+  warmMontage("high");
 
-  window.setTimeout(() => window.location.assign(montageEntry.href), 720);
+  window.setTimeout(() => window.location.assign(montageEntry.href), 380);
 });
 
 window.addEventListener("pageshow", () => {
