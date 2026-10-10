@@ -9,7 +9,7 @@ function createVideo({ src, poster, label }, className = "") {
 function createStage(project) {
   if (project.media.kind === "mosaic") {
     return `
-      <div class="media-frame__stage media-frame__stage--mosaic" data-media-stage role="button" tabindex="0" aria-label="Воспроизвести или остановить фрагменты VFX-работ">
+      <div class="media-frame__stage media-frame__stage--mosaic" data-media-stage role="button" tabindex="0" aria-label="VFX / 03 — воспроизвести или остановить фрагменты VFX-работ">
         ${project.media.items.map((item, index) => createVideo(item, `project-video--tile project-video--tile-${index + 1}`)).join("")}
         <span class="media-frame__timecode">VFX / 03</span>
       </div>
@@ -18,7 +18,7 @@ function createStage(project) {
 
   const layout = project.media.layout === "portrait" ? " media-frame__stage--portrait" : "";
   return `
-    <div class="media-frame__stage${layout}" data-media-stage role="button" tabindex="0" aria-label="Воспроизвести или остановить фрагмент проекта «${project.title}»">
+    <div class="media-frame__stage${layout}" data-media-stage role="button" tabindex="0" aria-label="00:${project.number}:00 · PLAY — воспроизвести или остановить фрагмент проекта «${project.title}»">
       ${createVideo(project.media)}
       <span class="media-frame__timecode">00:${project.number}:00</span>
       <span class="media-frame__play-state" aria-hidden="true">PLAY</span>
@@ -34,7 +34,7 @@ export function createMediaFrame(project) {
   const soundControl = project.media.hasAudio === false
     ? ""
     : `
-      <button class="media-frame__sound" type="button" data-sound-toggle data-sound-title="${project.title}" aria-pressed="false" aria-label="Включить звук в работе «${project.title}»">
+      <button class="media-frame__sound" type="button" data-sound-toggle data-sound-title="${project.title}" aria-pressed="false" aria-label="Звук — включить в работе «${project.title}»">
         <span class="media-frame__sound-icon" aria-hidden="true"><i></i><i></i><i></i></span>
         <span data-sound-label>Звук</span>
       </button>

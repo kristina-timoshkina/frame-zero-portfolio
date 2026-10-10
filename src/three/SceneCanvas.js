@@ -3,6 +3,23 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 
+function createQualityProfile() {
+  const compact = window.innerWidth < 700;
+  const limitedCpu = Number(navigator.hardwareConcurrency || 8) <= 4;
+  const limitedMemory = Number(navigator.deviceMemory || 8) <= 4;
+  const constrained = compact || limitedCpu || limitedMemory;
+
+  return {
+    constrained,
+    particleCount: constrained ? 340 : window.innerWidth < 900 ? 540 : 1050,
+    pixelRatioCap: constrained ? 1.15 : window.innerWidth < 900 ? 1.5 : 1.65,
+    frameInterval: 1000 / (constrained ? 30 : 50),
+    multisample: constrained ? 0 : 2,
+    bloomStrength: constrained ? 0.46 : 0.58,
+    bloomRadius: constrained ? 0.36 : 0.46,
+  };
+}
+
 function rememberOpacity(material, opacity = 1) {
   material.transparent = true;
   material.opacity = opacity;
@@ -291,9 +308,13 @@ export class SceneCanvas {
     this.sceneFade = 1;
     this.sceneFadeTarget = 1;
     this.burst = 0;
+    this.activeScene = "hero";
+    this.quality = createQualityProfile();
     this.timer = new THREE.Timer();
     this.timer.connect(document);
     this.frameId = null;
+    this.lastRenderTime = 0;
+    this.sceneIdleTimer = null;
     this.isVisible = !document.hidden;
     this.mediaSuspended = document.documentElement.dataset.mediaActive === "true";
 
@@ -322,10 +343,10 @@ export class SceneCanvas {
     this.renderer.toneMappingExposure = 1.12;
 
     this.composer = new EffectComposer(this.renderer);
-    this.composer.renderTarget1.samples = 4;
-    this.composer.renderTarget2.samples = 4;
+    this.composer.renderTarget1.samples = this.quality.multisample;
+    this.composer.renderTarget2.samples = this.quality.multisample;
     this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.58, 0.46, 0.58);
+    this.bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), this.quality.bloomStrength, this.quality.bloomRadius, 0.58);
     this.composer.addPass(this.bloom);
 
     this.group = new THREE.Group();
@@ -342,7 +363,7 @@ export class SceneCanvas {
     this.reel.rotation.set(-0.2, -0.5, 0.08);
     this.group.add(this.reel);
 
-    this.particles = createParticleField(window.innerWidth < 900 ? 540 : 1050, 3.2);
+    this.particles = createParticleField(this.quality.particleCount, 3.2);
     this.group.add(this.particles);
 
     this.setResponsivePosition();
@@ -353,7 +374,7 @@ export class SceneCanvas {
     this.resize();
 
     if (this.motionQuery.matches) this.renderStill();
-    else this.animate();
+    else this.startAnimation();
   }
 
   bindEvents() {
@@ -366,27 +387,29 @@ export class SceneCanvas {
     this.onResize = () => this.resize();
     this.onVisibility = () => {
       this.isVisible = !document.hidden;
-      if (this.isVisible) this.startAnimation();
+      if (this.isVisible && this.activeScene === "hero") this.startAnimation();
       else this.stopAnimation();
     };
     this.onMotionChange = () => {
       if (this.motionQuery.matches) {
         this.stopAnimation();
         this.renderStill();
-      } else {
+      } else if (this.activeScene === "hero") {
         this.startAnimation();
       }
     };
     this.onMediaActivity = (event) => {
       this.mediaSuspended = event.detail?.active === true;
       if (this.mediaSuspended) this.stopAnimation();
-      else this.startAnimation();
+      else if (this.activeScene === "hero") this.startAnimation();
     };
     this.onBurst = (event) => {
       this.burst = Math.max(this.burst, event.detail?.strength || 0.5);
     };
     this.onSceneChange = (event) => {
       const scene = event.detail?.scene;
+      this.activeScene = scene || "hero";
+      window.clearTimeout(this.sceneIdleTimer);
       this.sceneFadeTarget = scene === "hero" ? 1 : scene === "manifesto" ? 0.035 : scene === "final" ? 0.38 : scene === "author" ? 0.025 : 0;
       const immediateCap = scene === "manifesto" ? 0.035 : scene === "final" ? 0.38 : scene === "author" ? 0.025 : 0;
       if (scene !== "hero" && this.sceneFade > immediateCap) {
@@ -397,7 +420,21 @@ export class SceneCanvas {
         this.sceneFade = this.sceneFadeTarget;
         this.applySceneFade();
         this.renderStill();
+        return;
       }
+
+      if (scene === "hero") {
+        this.startAnimation();
+        return;
+      }
+
+      this.startAnimation();
+      this.sceneIdleTimer = window.setTimeout(() => {
+        if (this.activeScene === scene && !this.mediaSuspended) {
+          this.renderStill();
+          this.stopAnimation();
+        }
+      }, 520);
     };
 
     window.addEventListener("pointermove", this.onPointerMove, { passive: true });
@@ -412,6 +449,7 @@ export class SceneCanvas {
   startAnimation() {
     if (!this.isVisible || this.motionQuery.matches || this.mediaSuspended || this.frameId) return;
     this.timer.reset();
+    this.lastRenderTime = 0;
     this.animate();
   }
 
@@ -432,7 +470,7 @@ export class SceneCanvas {
     if (!this.renderer) return;
     const width = window.innerWidth;
     const height = window.innerHeight;
-    const pixelRatio = Math.min(window.devicePixelRatio, width < 900 ? 1.5 : 1.65);
+    const pixelRatio = Math.min(window.devicePixelRatio, this.quality.pixelRatioCap);
     this.camera.aspect = width / height;
     this.camera.updateProjectionMatrix();
     this.renderer.setPixelRatio(pixelRatio);
@@ -457,11 +495,17 @@ export class SceneCanvas {
     this.particles.material.opacity = 0.9 * Math.max(this.sceneFade, 0.11);
   }
 
-  animate = () => {
+  animate = (timestamp = performance.now()) => {
     if (!this.isVisible || this.motionQuery.matches || this.mediaSuspended) {
       this.frameId = null;
       return;
     }
+
+    if (timestamp - this.lastRenderTime < this.quality.frameInterval) {
+      this.frameId = requestAnimationFrame(this.animate);
+      return;
+    }
+    this.lastRenderTime = timestamp;
 
     this.timer.update();
     const delta = Math.min(this.timer.getDelta(), 0.05);
@@ -491,6 +535,7 @@ export class SceneCanvas {
 
   dispose() {
     if (this.frameId) cancelAnimationFrame(this.frameId);
+    window.clearTimeout(this.sceneIdleTimer);
     window.removeEventListener("pointermove", this.onPointerMove);
     window.removeEventListener("resize", this.onResize);
     document.removeEventListener("visibilitychange", this.onVisibility);

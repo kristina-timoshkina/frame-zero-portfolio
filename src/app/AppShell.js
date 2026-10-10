@@ -33,7 +33,7 @@ function createHero() {
         <span>FRAME</span>
         <span class="hero__zero">
           <span class="hero__zero-letters">ZER</span>
-          <a class="hero__montage-entry" href="./montage/" aria-label="O — открыть монтажную">
+          <a class="hero__montage-entry" href="./montage/" aria-label="Монтажная — открыть монтажную">
             <span class="hero__zero-ring" aria-hidden="true"><i></i></span>
             <span class="hero__montage-callout" aria-hidden="true">
               <span class="hero__montage-line"></span>
@@ -123,15 +123,13 @@ function createFinal() {
     <p class="eyebrow">Финальный кадр</p>
     <h2>Обычный кадр<br><span class="final__word">заканчивае<span class="final__et-gap">т</span>ся</span> здесь.</h2>
     <p class="final__statement">Следующая история начинается с идеи.</p>
-    <div class="final__actions">
-      <a class="button button--primary" href="#hero">Пережить ещё раз <span aria-hidden="true">↑</span></a>
-      <button class="button button--ghost" type="button" data-open-directions aria-expanded="false">Выбрать, что посмотреть</button>
-    </div>
-    <div class="direction-panel" hidden>
-      <a href="#buzz">Для бренда</a>
-      <a href="#formats">Для эксперта</a>
-      <a href="#story">Для истории</a>
-    </div>
+    <nav class="final-contacts" aria-label="Связаться с Евгением Тимошкиным">
+      <a class="final-contact final-contact--telegram" href="https://t.me/ETimcut" target="_blank" rel="noopener noreferrer"><span class="final-contact__index">01</span><span class="final-contact__label">Telegram</span><span class="final-contact__value">@ETimcut</span><span aria-hidden="true">↗</span></a>
+      <a class="final-contact" href="https://t.me/Timcut" target="_blank" rel="noopener noreferrer"><span class="final-contact__index">02</span><span class="final-contact__label">Портфолио</span><span class="final-contact__value">t.me/Timcut</span><span aria-hidden="true">↗</span></a>
+      <a class="final-contact" href="mailto:TimDjey29@gmail.com"><span class="final-contact__index">03</span><span class="final-contact__label">E-mail</span><span class="final-contact__value">TimDjey29@gmail.com</span><span aria-hidden="true">↗</span></a>
+      <a class="final-contact" href="https://vk.ru/club236611681" target="_blank" rel="noopener noreferrer"><span class="final-contact__index">04</span><span class="final-contact__label">VK</span><span class="final-contact__value">vk.ru/club236611681</span><span aria-hidden="true">↗</span></a>
+    </nav>
+    <div class="final__actions"><a class="button button--ghost" href="#hero">Пережить ещё раз <span aria-hidden="true">↑</span></a></div>
     <p class="final__legal">Учебная концепция. Форма заказа и передача данных не используются.</p>
   `;
   return section;

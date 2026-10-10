@@ -354,7 +354,7 @@
           <div class="monitor desk desk-center"><img id="desk-center" alt="Центральный рабочий монитор" /></div>
           <div class="monitor desk desk-right"><img id="desk-right" alt="Правый рабочий монитор" /></div>
         </div>
-        <a class="room-exit" id="exit-room" href="../#hero" aria-label="Завершить монтаж и вернуться в Frame Zero">
+        <a class="room-exit" id="exit-room" href="../#hero" aria-label="Завершить монтаж — вернуться в Frame Zero">
           <svg class="exit-hud" viewBox="0 0 120 120" aria-hidden="true">
             <circle class="ghost" cx="60" cy="60" r="50"/><circle class="ticks" cx="60" cy="60" r="55" pathLength="220"/><circle class="ring-a" cx="60" cy="60" r="46"/><circle class="ring-b" cx="60" cy="60" r="39"/><circle class="sweep" cx="60" cy="60" r="52" pathLength="240"/>
             <path class="ghost" d="M18 91H7v-17M102 27h11V11M99 96l12 12M21 22 10 11"/><line class="ghost" x1="95" y1="31" x2="112" y2="18"/><circle class="node" cx="113" cy="18" r="2.2"/><circle class="node" cx="8" cy="74" r="2.2"/>
@@ -388,7 +388,7 @@
     </div>
   </main>
 
-  <section class="viewer" id="viewer" aria-hidden="true">
+  <section class="viewer" id="viewer" aria-hidden="true" inert>
     <div class="viewer-card">
       <div class="viewer-top"><div><span id="viewer-type">Трейлер · 00:35</span> · «Накладно»</div><button class="close" id="close" type="button">Закрыть ×</button></div>
       <video id="player" controls playsinline></video>
@@ -484,9 +484,9 @@
     next.onclick=()=>{if(current===3){if(trailerStarted)moveTo(0);else playTrailerOnScreen()}else moveTo(current+1)};prev.onclick=()=>moveTo(current-1);document.getElementById('watch-full').onclick=()=>openViewer('film');
     const experience=document.querySelector('.experience'),exitRoom=document.getElementById('exit-room');
     exitRoom.addEventListener('click',event=>{event.preventDefault();if(experience.classList.contains('room-exiting'))return;const destination=exitRoom.href;experience.classList.add('room-exiting');const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;window.setTimeout(()=>{window.location.href=destination},reduced?0:1150);window.setTimeout(()=>experience.classList.remove('room-exiting'),1750)});
-    const viewer=document.getElementById('viewer'),player=document.getElementById('player');
-    function openViewer(kind){const full=kind==='film';document.getElementById('viewer-type').textContent=full?'Полный фильм · 03:42':'Трейлер · 00:35';document.getElementById('viewer-note').textContent=full?'Полная версия собрана из трёх частей и облегчена для веб-просмотра.':'Трейлер показывает персонажей, атмосферу и конфликт, не пересказывая сюжет.';player.poster=F+'film-guitar.jpg';player.src=F+(full?'nakladno-full-web.mp4':'nakladno-trailer-web.mp4');viewer.classList.add('open');viewer.setAttribute('aria-hidden','false')}
-    function closeViewer(){player.pause();player.removeAttribute('src');player.load();viewer.classList.remove('open');viewer.setAttribute('aria-hidden','true')}document.getElementById('close').onclick=closeViewer;viewer.onclick=e=>{if(e.target===viewer)closeViewer()};document.onkeydown=e=>{if(e.key==='Escape')closeViewer()};commit(0);
+    const viewer=document.getElementById('viewer'),player=document.getElementById('player'),closeViewerButton=document.getElementById('close');let viewerTrigger=null;
+    function openViewer(kind){const full=kind==='film';viewerTrigger=document.activeElement;document.getElementById('viewer-type').textContent=full?'Полный фильм · 03:42':'Трейлер · 00:35';document.getElementById('viewer-note').textContent=full?'Полная версия собрана из трёх частей и облегчена для веб-просмотра.':'Трейлер показывает персонажей, атмосферу и конфликт, не пересказывая сюжет.';player.poster=F+'film-guitar.jpg';player.src=F+(full?'nakladno-full-web.mp4':'nakladno-trailer-web.mp4');viewer.inert=false;viewer.classList.add('open');viewer.setAttribute('aria-hidden','false');closeViewerButton.focus()}
+    function closeViewer(){player.pause();player.removeAttribute('src');player.load();viewer.classList.remove('open');viewer.setAttribute('aria-hidden','true');viewer.inert=true;viewerTrigger?.focus?.()}closeViewerButton.onclick=closeViewer;viewer.onclick=e=>{if(e.target===viewer)closeViewer()};document.onkeydown=e=>{if(e.key==='Escape'&&!viewer.inert)closeViewer()};commit(0);
   </script>
 </body>
 </html>

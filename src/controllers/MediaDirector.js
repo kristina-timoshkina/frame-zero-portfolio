@@ -223,7 +223,7 @@ export class MediaDirector {
     button.setAttribute("aria-pressed", String(enabled));
     button.querySelector("[data-sound-label]").textContent = enabled ? "Звук включён" : "Звук";
     const title = button.dataset.soundTitle || "ролике";
-    button.setAttribute("aria-label", `${enabled ? "Выключить" : "Включить"} звук в работе «${title}»`);
+    button.setAttribute("aria-label", `Звук — ${enabled ? "выключить" : "включить"} в работе «${title}»`);
   }
 
   dispose() {
