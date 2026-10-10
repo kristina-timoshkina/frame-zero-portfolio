@@ -125,6 +125,38 @@
   animation: aperture-breathe 5s ease-in-out infinite;
 }
 
+body::after {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at var(--montage-x, 50%) var(--montage-y, 50%), rgba(255, 255, 255, 0.98), rgba(111, 228, 255, 0.92) 18%, rgba(255, 121, 110, 0.34) 42%, rgba(5, 7, 17, 0.99) 72%);
+  clip-path: circle(0 at var(--montage-x, 50%) var(--montage-y, 50%));
+  content: "";
+  opacity: 0;
+}
+
+html.montage-entering {
+  overflow: hidden;
+}
+
+html.montage-entering body::after {
+  animation: montage-iris-enter 760ms var(--ease-out) both;
+}
+
+@keyframes montage-iris-enter {
+  0% {
+    opacity: 0;
+    clip-path: circle(0 at var(--montage-x) var(--montage-y));
+  }
+  18% { opacity: 1; }
+  100% {
+    opacity: 1;
+    clip-path: circle(155vmax at var(--montage-x) var(--montage-y));
+  }
+}
+
 @keyframes aperture-breathe {
   0%, 100% { transform: scale(0.96); opacity: 0.78; }
   50% { transform: scale(1.04); opacity: 1; }
@@ -138,6 +170,15 @@
   }
 
   .media-frame__aperture {
+    animation: none;
+  }
+
+  .hero__zero-ring::before,
+  .hero__zero-ring i {
+    animation: none;
+  }
+
+  html.montage-entering body::after {
     animation: none;
   }
 }

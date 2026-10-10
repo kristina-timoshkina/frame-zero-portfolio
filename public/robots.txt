@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://kristina-timoshkina.github.io/frame-zero-portfolio/sitemap.xml

@@ -11,6 +11,30 @@ const app = document.querySelector("#app");
 app.append(createAppShell());
 const interactionDirector = new InteractionDirector();
 
+const montageEntry = document.querySelector(".hero__montage-entry");
+montageEntry?.addEventListener("click", (event) => {
+  if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+  event.preventDefault();
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reducedMotion) {
+    window.location.assign(montageEntry.href);
+    return;
+  }
+
+  const ring = montageEntry.querySelector(".hero__zero-ring");
+  const bounds = ring.getBoundingClientRect();
+  document.documentElement.style.setProperty("--montage-x", `${bounds.left + bounds.width / 2}px`);
+  document.documentElement.style.setProperty("--montage-y", `${bounds.top + bounds.height / 2}px`);
+  document.documentElement.classList.add("montage-entering");
+
+  window.setTimeout(() => window.location.assign(montageEntry.href), 720);
+});
+
+window.addEventListener("pageshow", () => {
+  document.documentElement.classList.remove("montage-entering");
+});
+
 window.requestAnimationFrame(() => {
   document.documentElement.classList.add("app-ready");
   window.setTimeout(() => document.querySelector("#boot-poster")?.remove(), 160);

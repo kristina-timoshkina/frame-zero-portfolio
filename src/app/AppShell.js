@@ -31,9 +31,15 @@ function createHero() {
       <p class="eyebrow hero__eyebrow">Интерактивное портфолио · 2026</p>
       <h1>
         <span>FRAME</span>
-        <span class="hero__zero" aria-label="ZERO">
-          <span class="hero__zero-letters" aria-hidden="true">ZER</span>
-          <span class="hero__zero-ring" aria-hidden="true"><i></i></span>
+        <span class="hero__zero">
+          <span class="hero__zero-letters">ZER</span>
+          <a class="hero__montage-entry" href="./montage/" aria-label="O — открыть монтажную">
+            <span class="hero__zero-ring" aria-hidden="true"><i></i></span>
+            <span class="hero__montage-callout" aria-hidden="true">
+              <span class="hero__montage-line"></span>
+              <strong>Монтажная</strong>
+            </span>
+          </a>
         </span>
       </h1>
       <p class="hero__statement">Обычный кадр <em>заканчивается</em> здесь.</p>
